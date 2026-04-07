@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAzOMEYjP9IRrIa1vmPggaOxtIISTLdy_Y",
+    apiKey: "SECRETT",
     authDomain: "ojttracking-2d004.firebaseapp.com",
     projectId: "ojttracking-2d004",
 };
