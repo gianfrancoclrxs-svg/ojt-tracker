@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="left-side">
+    <button onclick="location.href='homepage.html'">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="buttons">
+    <button onclick="logout()">Logout</button>
+    <button onclick="deleteAccount()" class="danger">Delete Account</button>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+
+<script>
+function logout() {
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("userDocId");
+  alert("Logged out!");
+  location.href = "index.html";
+}
+
+async function deleteAccount() {
+  const confirmDelete = confirm("Are you sure you want to delete your account? This cannot be undone.");
+
+  if (!confirmDelete) return;
+
+  const userDocId = localStorage.getItem("userDocId");
+
+  if (!userDocId) {
+    alert("User not found");
+    return;
+  }
+
+  try {
+    const logs = await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .get();
+
+    const batch = db.batch();
+
+    logs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    await db.collection("users").doc(userDocId).delete();
+
+    localStorage.clear();
+
+    alert("Account deleted successfully!");
+    location.href = "index.html";
+
+  } catch (error) {
+    console.error(error);
+    alert("Error deleting account");
+  }
+}
+</script>
+
+</body>
+</html>

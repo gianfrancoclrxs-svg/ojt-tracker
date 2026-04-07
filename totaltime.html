@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Total Time</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="left-side">
+    <button onclick="location.href='homepage.html'">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+  </div>
+
+  <div class="right-side">
+    <span id="modeToggle">
+      <i class="fa-regular fa-moon"></i>
+    </span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Total Hours</h2>
+    <p id="totalHours">0 hrs</p>
+  </div>
+
+  <div class="card">
+    <h2>Expected Finish Date</h2>
+    <p id="finishDate">--</p>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+<script src="totaltime.js"></script>
+
+<script>
+const modeToggle = document.getElementById("modeToggle");
+modeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  const icon = modeToggle.querySelector("i");
+  if (document.body.classList.contains("dark-mode")) {
+    icon.classList.replace("fa-moon","fa-sun");
+  } else {
+    icon.classList.replace("fa-sun","fa-moon");
+  }
+});
+
+if (
+  localStorage.getItem("loggedIn") !== "true" ||
+  !localStorage.getItem("userDocId")
+) {
+  location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
