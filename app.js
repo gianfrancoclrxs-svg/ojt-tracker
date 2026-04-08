@@ -31,6 +31,7 @@ document.getElementById("signUpBtn")?.addEventListener("click",async()=>{
     email,
     student_id: studentId,
     ojt_location:"",
+    ojt_address: "",
     target_hours:0
   });
   localStorage.setItem("userDocId",userRef.id);
@@ -84,22 +85,33 @@ async function getTotalRecordedHours(userDocId){
   return { total, absentCount };
 }
 
-async function updateGreetingCard(){
+async function updateGreetingCard() {
   const userDocId = localStorage.getItem("userDocId");
-  if(!userDocId) return;
-  const userDoc=await db.collection("users").doc(userDocId).get();
-  const data=userDoc.data();
-  document.getElementById("greeting").textContent=`Hello, ${data.username}!`;
+  if (!userDocId) return;
 
-  if(!data.ojt_location||!data.target_hours){
-    document.getElementById("ojtPopup").style.display="flex";
-    document.getElementById("ojtInfo").style.display="none";
+  const userDoc = await db.collection("users").doc(userDocId).get();
+  const data = userDoc.data();
+
+  document.getElementById("greeting").textContent = `Hello, ${data.username}!`;
+
+  if (!data.ojt_location || !data.ojt_address || !data.target_hours) {
+    document.getElementById("ojtPopup").style.display = "flex";
+    document.getElementById("ojtInfo").style.display = "none";
+
+    // Pre-fill popup fields if user already typed something
+    document.getElementById("ojtCompanyName").value = data.ojt_location || "";
+    document.getElementById("ojtAddress").value = data.ojt_address || "";
+    document.getElementById("targetHours").value = data.target_hours || "";
+
     return;
   }
 
-  document.getElementById("ojtPopup").style.display="none";
-  document.getElementById("ojtInfo").style.display="block";
-  document.getElementById("companyName").textContent=data.ojt_location;
+  document.getElementById("ojtPopup").style.display = "none";
+  document.getElementById("ojtInfo").style.display = "block";
+
+  // Display company name AND address
+  document.getElementById("companyName").textContent = data.ojt_location;
+  document.getElementById("companyAddress").textContent = data.ojt_address;
 
   const { total } = await getTotalRecordedHours(userDocId);
   localStorage.setItem("overallTotalHours", total);
@@ -108,12 +120,21 @@ async function updateGreetingCard(){
     `${Math.floor(remaining)}h Remaining`;
 }
 
-document.getElementById("saveOjtBtn")?.addEventListener("click", async()=>{
-  const loc=document.getElementById("ojtLocation").value;
-  const target=parseFloat(document.getElementById("targetHours").value);
-  if(!loc||!target) return alert("Fill all fields");
-  const userDocId=localStorage.getItem("userDocId");
-  await db.collection("users").doc(userDocId).update({ojt_location:loc,target_hours:target});
+  document.getElementById("saveOjtBtn")?.addEventListener("click", async () => {
+  const loc = document.getElementById("ojtCompanyName").value.trim(); // updated
+  const addr = document.getElementById("ojtAddress").value.trim();
+  const target = parseFloat(document.getElementById("targetHours").value);
+
+  if (!loc || !addr || !target) return alert("Fill all fields");
+
+  const userDocId = localStorage.getItem("userDocId");
+
+  await db.collection("users").doc(userDocId).update({
+    ojt_location: loc,
+    ojt_address: addr,
+    target_hours: target
+  });
+
   updateGreetingCard();
 });
 

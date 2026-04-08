@@ -20,10 +20,10 @@
 
 <div class="container">
 
-  <!-- Edit OJT Info -->
   <div class="card">
     <h3>Edit OJT Info</h3>
-    <input type="text" id="editLocation" placeholder="OJT Location">
+    <input type="text" id="editLocation" placeholder="OJT Location / Company Name">
+    <input type="text" id="editAddress" placeholder="OJT Address / Company Address"> <!-- new field -->
     <input type="number" id="editTargetHours" placeholder="Target Hours">
     <button id="saveOjtSettingsBtn">Save Changes</button>
   </div>
@@ -74,28 +74,33 @@ async function deleteAccount() {
 
 // --- Load existing OJT info ---
 async function loadOjtInfo() {
-  const userDocId = localStorage.getItem("userDocId");
-  if (!userDocId) return;
+    const userDocId = localStorage.getItem("userDocId");
+    if (!userDocId) return;
 
-  const userDoc = await db.collection("users").doc(userDocId).get();
-  const data = userDoc.data();
+    const userDoc = await db.collection("users").doc(userDocId).get();
+    const data = userDoc.data();
 
-  document.getElementById("editLocation").value = data.ojt_location || "";
-  document.getElementById("editTargetHours").value = data.target_hours || "";
-}
-loadOjtInfo();
+    document.getElementById("editLocation").value = data.ojt_location || "";
+    document.getElementById("editAddress").value = data.ojt_address || ""; // new line
+    document.getElementById("editTargetHours").value = data.target_hours || "";
+  }
+  loadOjtInfo();
 
 // --- Save Edited OJT Info ---
 document.getElementById("saveOjtSettingsBtn").addEventListener("click", async () => {
   const loc = document.getElementById("editLocation").value.trim();
+  const addr = document.getElementById("editAddress").value.trim(); // new
   const target = parseFloat(document.getElementById("editTargetHours").value);
-  if (!loc || !target) return alert("Fill all fields");
+
+  if (!loc || !addr || !target) return alert("Fill all fields"); // include address
 
   const userDocId = localStorage.getItem("userDocId");
   await db.collection("users").doc(userDocId).update({
     ojt_location: loc,
+    ojt_address: addr, // save to DB
     target_hours: target
   });
+
   alert("OJT info updated!");
 });
 </script>
