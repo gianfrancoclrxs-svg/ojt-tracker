@@ -96,8 +96,8 @@ button:hover {
   border-radius: 12px;
   font-size: 1em;
 }
-.buttons button:nth-child(1) { background: #ff6b6b; }
-.buttons button:nth-child(2) { background: #4caf50; }
+.buttons button:nth-child(1) { background: #4caf50; }
+.buttons button:nth-child(2) { background: #ff6b6b; }
 .form-label {
   display: block;
   text-align: left;
