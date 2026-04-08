@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DTR</title>
+
+<link rel="stylesheet" href="dtr.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+
+<body>
+
+<div class="page">
+
+  <p id="companyName" class="company"></p>
+  <p id="companyAddress" class="address"></p>
+
+  <p class="center-title">DAILY TIME RECORD</p>
+
+  <div class="name-section">
+    <div class="name-line"></div>
+    <p class="name-label">Name of Trainee</p>
+  </div>
+
+  <p>MONTH & YEAR: <span class="underline"></span></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>DATE</th>
+        <th>DAYS</th>
+        <th>AM IN</th>
+        <th>AM OUT</th>
+        <th>PM IN</th>
+        <th>PM OUT</th>
+        <th>SUPERVISOR'S <br> SIGNATURE/INITIAL</th>
+      </tr>
+    </thead>
+    <tbody id="dtrBody"></tbody>
+  </table>
+
+  <div class="footer">
+    <div class="footer-row">
+
+      <div class="footer-col">
+        <p>Certified Corrected by:</p>
+        <div class="line"></div>
+        <p class="label">Signature Over Printed Name of Trainee</p>
+      </div>
+
+      <div class="footer-col">
+        <p>Verified by:</p>
+        <div class="line"></div>
+        <p class="label">Signature Over Printed Name of Supervisor</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="dtr.js"></script>
+</body>
+</html>

@@ -15,7 +15,6 @@
       <i class="fa-solid fa-arrow-left"></i>
     </button>
   </div>
-
   <div class="right-side">
     <span id="modeToggle">
       <i class="fa-regular fa-moon"></i>
@@ -28,25 +27,23 @@
 
   <p class="form-label">Add New Log Entry</p>
   <div class="log-form card">
-    <label for="logDate">Date</label>
+    <label>Date</label>
     <input type="date" id="logDate">
 
-    <label for="amIn">AM Time In</label>
+    <label>AM Time In</label>
     <input type="time" id="amIn">
 
-    <label for="amOut">AM Time Out</label>
+    <label>AM Time Out</label>
     <input type="time" id="amOut">
 
-    <label for="pmIn">PM Time In</label>
+    <label>PM Time In</label>
     <input type="time" id="pmIn">
 
-    <label for="pmOut">PM Time Out</label>
+    <label>PM Time Out</label>
     <input type="time" id="pmOut">
 
     <button id="saveLogBtn">Save Log</button>
-
-    <button id="absentBtn" style="background-color: red; color: white;">Mark Absent</button>
-
+    <button id="absentBtn" style="background:red;color:white;">Mark Absent</button>
   </div>
 
   <h3>Previous Logs</h3>
@@ -64,32 +61,89 @@
     </thead>
     <tbody id="logTableBody"></tbody>
   </table>
+
+  <div class="buttons">
+    <button id="printDtrBtn" style="background:#2575fc;color:white;">
+      Print DTR
+    </button>
+  </div>
 </div>
 
+<!-- POPUP -->
+<div id="dtrPopup" class="popup-overlay" style="display:none;">
+  <div class="popup">
+    <h2>Select Month & Year</h2>
+
+    <label>Month</label>
+    <input type="number" id="dtrMonth" min="1" max="12" placeholder="1-12">
+
+    <label>Year</label>
+    <input type="number" id="dtrYear" min="2000" max="2100" placeholder="YYYY">
+
+    <button id="generateDtrBtn">Generate DTR</button>
+    <button id="closeDtrPopup" style="background:#e53935;">Cancel</button>
+  </div>
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
 <script src="app.js"></script>
+
 <script>
 loadLogbook();
 
-const modeToggle = document.getElementById("modeToggle");
-modeToggle.addEventListener("click", () => {
+/* DARK MODE */
+document.getElementById("modeToggle").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
-  const icon = modeToggle.querySelector("i");
-  if(document.body.classList.contains("dark-mode")){
-    icon.classList.replace("fa-moon","fa-sun");
-  }else{
-    icon.classList.replace("fa-sun","fa-moon");
-  }
+  const icon = document.querySelector("#modeToggle i");
+  icon.classList.toggle("fa-moon");
+  icon.classList.toggle("fa-sun");
 });
-</script>
-<script>
-  if (
-    localStorage.getItem("loggedIn") !== "true" ||
-    !localStorage.getItem("userDocId")
-  ) {
-    location.href = "index.html";
+
+/* AUTH CHECK */
+if (localStorage.getItem("loggedIn") !== "true" || !localStorage.getItem("userDocId")) {
+  location.href = "index.html";
+}
+
+/* OPEN POPUP */
+document.getElementById("printDtrBtn").addEventListener("click", () => {
+  document.getElementById("dtrPopup").style.display = "flex";
+});
+
+/* CLOSE POPUP */
+document.getElementById("closeDtrPopup").addEventListener("click", () => {
+  document.getElementById("dtrPopup").style.display = "none";
+});
+
+/* 🔥 GENERATE DTR (NEW FIXED VERSION) */
+document.getElementById("generateDtrBtn").addEventListener("click", () => {
+  const month = document.getElementById("dtrMonth").value;
+  const year = document.getElementById("dtrYear").value;
+
+  if (!month || !year) {
+    alert("Enter month and year");
+    return;
   }
+
+  document.getElementById("dtrPopup").style.display = "none";
+
+  // OPEN DTR PAGE WITH PARAMETERS
+  const win = window.open(`dtr.html?month=${month}&year=${year}`, "_blank");
+
+  // WAIT UNTIL PAGE + FIRESTORE LOADS
+  const timer = setInterval(() => {
+    if (win.document.readyState === "complete") {
+      clearInterval(timer);
+
+      setTimeout(() => {
+        win.focus();
+        win.print(); // 🔥 PRINT USING YOUR REAL DESIGN
+      }, 1200); // give Firebase time
+    }
+  }, 500);
+});
 </script>
 
 </body>

@@ -1,0 +1,149 @@
+* {
+  font-family: sans-serif;
+  font-weight: normal;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-size: 11px; /* slightly smaller overall */
+}
+
+/* DATE align right */
+td:first-child {
+  text-align: right;
+  padding-right: 4px;
+}
+
+/* PAGE */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 12mm 15mm; /* 🔥 reduced from 20mm */
+  margin: auto;
+  border: 1px solid black;
+}
+
+/* TITLE */
+.center-title {
+  text-align: center;
+  margin: 5px 0 0 0; /* 🔥 tighter */
+  font-size: 13px;
+}
+
+/* Company */
+.company {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 12px;
+  margin: 0;
+}
+
+.address {
+  text-align: center;
+  font-size: 11px;
+  margin: 0 0 5px 0; /* 🔥 tighter */
+}
+
+/* Name */
+.name-section {
+  text-align: center;
+  margin: 10px 0; /* 🔥 reduced */
+}
+
+.name-line {
+  width: 60%;
+  margin: auto;
+  border-bottom: 1px solid black;
+  height: 14px; /* 🔥 thinner */
+}
+
+.name-label {
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+/* Underline */
+.underline {
+  display: inline-block;
+  border-bottom: 1px solid black;
+  width: 200px; /* 🔥 shorter */
+  height: 12px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px; /* 🔥 reduced */
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th {
+  font-weight: bold;
+  background-color: rgb(212, 212, 212);
+  font-size: 10px; /* 🔥 smaller header */
+  padding: 3px;
+}
+
+th, td {
+  font-size: 10px; /* 🔥 thinner text */
+  text-align: center;
+  padding: 2px 3px; /* 🔥 KEY: thinner rows */
+  line-height: 1.1;
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 6px; /* 🔥 closer to table */
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.footer-col {
+  width: 48%;
+  text-align: center;
+}
+
+.line {
+  border-bottom: 1px solid black;
+  height: 14px; /* 🔥 thinner */
+  margin: 12px 0 3px 0; /* 🔥 tighter */
+}
+
+.label {
+  font-size: 10px;
+  margin: 0;
+}
+
+/* PRINT FIX (VERY IMPORTANT) */
+@media print {
+  body {
+    margin: 0;
+  }
+
+  .page {
+    border: none;
+    page-break-inside: avoid;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  .footer-row {
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+}

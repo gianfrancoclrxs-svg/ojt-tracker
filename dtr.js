@@ -1,0 +1,99 @@
+/* FIREBASE */
+const firebaseConfig = {
+  apiKey: "SECRETT",
+  authDomain: "ojttracking-2d004.firebaseapp.com",
+  projectId: "ojttracking-2d004",
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+/* HELPERS */
+function getDayName(dateString) {
+  const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+  return days[new Date(dateString).getDay()];
+}
+
+function getMonthName(monthNumber) {
+  return ["January","February","March","April","May","June","July","August","September","October","November","December"][monthNumber - 1];
+}
+
+/* LOAD DTR */
+async function loadDTR(month, year) {
+  try {
+    const userDocId = localStorage.getItem("userDocId");
+    if (!userDocId) {
+      alert("User not found");
+      return;
+    }
+
+    // USER DATA
+    const userDoc = await db.collection("users").doc(userDocId).get();
+    const userData = userDoc.data();
+
+    document.getElementById("companyName").textContent = userData?.ojt_location || "";
+    document.getElementById("companyAddress").textContent = userData?.ojt_address || "";
+
+    // Month & Year
+    document.querySelector(".underline").textContent = `${getMonthName(month)} ${year}`;
+
+    // RECORDS
+    const snapshot = await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .get();
+
+    const recordsMap = {};
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.date) recordsMap[d.date] = d;
+    });
+
+    const tbody = document.getElementById("dtrBody");
+    tbody.innerHTML = "";
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const record = recordsMap[dateStr];
+
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${day}</td>
+        <td>${record ? getDayName(dateStr) : ""}</td>
+        <td>${record?.am_in || ""}</td>
+        <td>${record?.am_out || ""}</td>
+        <td>${record?.pm_in || ""}</td>
+        <td>${record?.pm_out || ""}</td>
+        <td></td>
+      `;
+
+      tbody.appendChild(row);
+    }
+
+    // 🔥 IMPORTANT: wait for DOM to render before printing
+    setTimeout(() => {
+      window.print();
+    }, 1000);
+
+  } catch (error) {
+    console.error("Error loading DTR:", error);
+    alert("Failed to load DTR data");
+  }
+}
+
+/* GET MONTH/YEAR FROM URL */
+const urlParams = new URLSearchParams(window.location.search);
+const month = parseInt(urlParams.get("month"));
+const year = parseInt(urlParams.get("year"));
+
+// fallback (if missing)
+const finalMonth = month || new Date().getMonth() + 1;
+const finalYear = year || new Date().getFullYear();
+
+/* RUN */
+loadDTR(finalMonth, finalYear);
