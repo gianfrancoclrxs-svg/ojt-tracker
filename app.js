@@ -57,16 +57,31 @@ document.getElementById("loginBtn")?.addEventListener("click",async()=>{
 function parseTime(t){ const [h,m]=t.split(":").map(Number); return h+m/60; }
 
 async function getTotalRecordedHours(userDocId){
-  const snapshot=await db.collection("users").doc(userDocId).collection("ojt_records").get();
-  let total=0;
-  snapshot.forEach(doc=>{
-    const d=doc.data();
-    if(d.am_in&&d.am_out&&d.pm_in&&d.pm_out){
-      total += parseTime(d.am_out)-parseTime(d.am_in);
-      total += parseTime(d.pm_out)-parseTime(d.pm_in);
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .get();
+
+  let total = 0;
+  let absentCount = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+
+    const am = parseTime(d.am_out) - parseTime(d.am_in);
+    const pm = parseTime(d.pm_out) - parseTime(d.pm_in);
+
+    const dayTotal = am + pm;
+
+    // 🔥 if invalid = absent
+    if (isNaN(dayTotal)) {
+      absentCount++;
+    } else {
+      total += dayTotal;
     }
   });
-  return total;
+
+  return { total, absentCount };
 }
 
 async function updateGreetingCard(){
@@ -86,10 +101,11 @@ async function updateGreetingCard(){
   document.getElementById("ojtInfo").style.display="block";
   document.getElementById("companyName").textContent=data.ojt_location;
 
-  const total = await getTotalRecordedHours(userDocId);
+  const { total } = await getTotalRecordedHours(userDocId);
   localStorage.setItem("overallTotalHours", total);
-  const remaining = Math.max(data.target_hours-total,0);
-  document.getElementById("remainingHours").textContent=`${Math.floor(remaining)}h Remaining`;
+  const remaining = Math.max(data.target_hours - total, 0);
+  document.getElementById("remainingHours").textContent =
+    `${Math.floor(remaining)}h Remaining`;
 }
 
 document.getElementById("saveOjtBtn")?.addEventListener("click", async()=>{

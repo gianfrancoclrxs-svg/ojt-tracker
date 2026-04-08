@@ -3,10 +3,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     const userDocId = localStorage.getItem("userDocId");
     if (!userDocId) return;
 
-    const total = await getTotalRecordedHours(userDocId);
+    const { total, absentCount } = await getTotalRecordedHours(userDocId);
 
     document.getElementById("totalHours").textContent =
         total.toFixed(2) + " hrs";
+
+    document.getElementById("totalAbsent").textContent =
+        absentCount;
 
     const userDoc = await db.collection("users").doc(userDocId).get();
     const data = userDoc.data();
