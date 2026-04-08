@@ -1,4 +1,4 @@
-// Initialize Firebase
+// app.js
 const firebaseConfig = {
     apiKey: "SECRETT",
     authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -7,66 +7,66 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ======== FORM SWITCHING ========
+// Toggle between login/signup forms
 document.getElementById("showSignUp")?.addEventListener("click", () => {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("signUpForm").style.display = "block";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("signUpForm").style.display = "block";
 });
 document.getElementById("showLogin")?.addEventListener("click", () => {
-    document.getElementById("signUpForm").style.display = "none";
-    document.getElementById("loginForm").style.display = "block";
+  document.getElementById("signUpForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "block";
 });
 
-// ======== SIGN UP ========
+// Sign Up
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
-    const fullName = document.getElementById("fullName").value.trim();
-    const username = document.getElementById("signUpUsername").value.trim();
-    const email = document.getElementById("signUpEmail").value.trim();
-    const studentId = document.getElementById("signUpStudentId").value.trim();
-    if (!fullName || !username || !email || !studentId) return alert("Fill all fields");
+  const fullName = document.getElementById("fullName").value.trim();
+  const username = document.getElementById("signUpUsername").value.trim();
+  const email = document.getElementById("signUpEmail").value.trim();
+  const studentId = document.getElementById("signUpStudentId").value.trim();
+  if (!fullName || !username || !email || !studentId) return alert("Fill all fields");
 
-    const existing = await db.collection("users").where("username", "==", username).get();
-    if (!existing.empty) return alert("Username taken");
+  const existing = await db.collection("users").where("username", "==", username).get();
+  if (!existing.empty) return alert("Username taken");
 
-    const userRef = await db.collection("users").add({
-        full_name: fullName,
-        username,
-        email,
-        student_id: studentId,
-        ojt_location: "",
-        ojt_address: "",
-        target_hours: 0
-    });
-    localStorage.setItem("userDocId", userRef.id);
-    localStorage.setItem("loggedIn", "true");
-    window.location.href = "homepage.html";
+  const userRef = await db.collection("users").add({
+    full_name: fullName,
+    username,
+    email,
+    student_id: studentId,
+    ojt_location: "",
+    ojt_address: "",
+    target_hours: 0
+  });
+  localStorage.setItem("userDocId", userRef.id);
+  localStorage.setItem("loggedIn", "true");
+  window.location.href = "homepage.html";
 });
 
-// ======== LOGIN ========
+// Login
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
-    const username = document.getElementById("loginUsername").value.trim();
-    const studentId = document.getElementById("loginStudentId").value.trim();
-    if (!username || !studentId) return alert("Fill all fields");
+  const username = document.getElementById("loginUsername").value.trim();
+  const studentId = document.getElementById("loginStudentId").value.trim();
+  if (!username || !studentId) return alert("Fill all fields");
 
-    const query = await db.collection("users")
-        .where("username", "==", username)
-        .where("student_id", "==", studentId)
-        .get();
-    if (query.empty) return alert("Invalid login");
+  const query = await db.collection("users")
+    .where("username", "==", username)
+    .where("student_id", "==", studentId)
+    .get();
+  if (query.empty) return alert("Invalid login");
 
-    localStorage.setItem("userDocId", query.docs[0].id);
-    localStorage.setItem("loggedIn", "true");
-    window.location.href = "homepage.html";
+  localStorage.setItem("userDocId", query.docs[0].id);
+  localStorage.setItem("loggedIn", "true");
+  window.location.href = "homepage.html";
 });
 
-// ======== SAFE TIME PARSER ========
+// Helper to parse "hh:mm" into hours
 function safeParseTime(t) {
-    if (!t) return NaN;
-    const [h, m] = t.split(":").map(Number);
-    return h + m / 60;
+  if (!t) return NaN;
+  const [h, m] = t.split(":").map(Number);
+  return h + m / 60;
 }
 
-// ======== GET TOTAL HOURS ========
+// ✅ Your working getTotalRecordedHours()
 async function getTotalRecordedHours(userDocId) {
     const snapshot = await db.collection("users")
         .doc(userDocId)
@@ -93,173 +93,164 @@ async function getTotalRecordedHours(userDocId) {
     return { total, absentCount };
 }
 
-// ======== UPDATE GREETING & REMAINING HOURS ========
+// Update homepage greeting & remaining hours
 async function updateGreetingCard() {
-    const userDocId = localStorage.getItem("userDocId");
-    if (!userDocId) return;
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return;
 
-    const userDoc = await db.collection("users").doc(userDocId).get();
-    const data = userDoc.data();
+  const userDoc = await db.collection("users").doc(userDocId).get();
+  const data = userDoc.data();
 
-    document.getElementById("greeting").textContent = `Hello, ${data.username}!`;
+  document.getElementById("greeting").textContent = `Hello, ${data.username}!`;
 
-    if (!data.ojt_location || !data.ojt_address || !data.target_hours) {
-        document.getElementById("ojtPopup").style.display = "flex";
-        document.getElementById("ojtInfo").style.display = "none";
+  if (!data.ojt_location || !data.ojt_address || !data.target_hours) {
+    document.getElementById("ojtPopup").style.display = "flex";
+    document.getElementById("ojtInfo").style.display = "none";
 
-        document.getElementById("ojtCompanyName").value = data.ojt_location || "";
-        document.getElementById("ojtAddress").value = data.ojt_address || "";
-        document.getElementById("targetHours").value = data.target_hours || "";
-        return;
-    }
+    document.getElementById("ojtCompanyName").value = data.ojt_location || "";
+    document.getElementById("ojtAddress").value = data.ojt_address || "";
+    document.getElementById("targetHours").value = data.target_hours || "";
+    return;
+  }
 
-    document.getElementById("ojtPopup").style.display = "none";
-    document.getElementById("ojtInfo").style.display = "block";
+  document.getElementById("ojtPopup").style.display = "none";
+  document.getElementById("ojtInfo").style.display = "block";
 
-    document.getElementById("companyName").textContent = data.ojt_location;
-    document.getElementById("companyAddress").textContent = data.ojt_address;
+  document.getElementById("companyName").textContent = data.ojt_location;
 
-    const result = await getTotalRecordedHours(userDocId);
-    const total = Number(result.total) || 0;
-    const target = Number(data.target_hours) || 0;
-    const remaining = Math.max(target - total, 0);
+  // After getting userDoc and calling getTotalRecordedHours()
+  const { total } = await getTotalRecordedHours(userDocId);
+  const targetHours = data.target_hours || 0;
 
-    localStorage.setItem("overallTotalHours", total);
-    document.getElementById("remainingHours").textContent = `${remaining.toFixed(2)}h Remaining`;
+  const remaining = targetHours - total;
+
+  // Display with 2 decimals
+  document.getElementById("remainingHours").textContent = `${remaining.toFixed(2)}h Remaining`;
 }
 
-// ======== SAVE OJT INFO ========
+// Save OJT info
 document.getElementById("saveOjtBtn")?.addEventListener("click", async () => {
-    const loc = document.getElementById("ojtCompanyName").value.trim();
-    const addr = document.getElementById("ojtAddress").value.trim();
-    const target = parseFloat(document.getElementById("targetHours").value);
+  const loc = document.getElementById("ojtCompanyName").value.trim();
+  const addr = document.getElementById("ojtAddress").value.trim();
+  const target = parseFloat(document.getElementById("targetHours").value);
 
-    if (!loc || !addr || !target) return alert("Fill all fields");
+  if (!loc || !addr || !target) return alert("Fill all fields");
 
-    const userDocId = localStorage.getItem("userDocId");
+  const userDocId = localStorage.getItem("userDocId");
 
-    await db.collection("users").doc(userDocId).update({
-        ojt_location: loc,
-        ojt_address: addr,
-        target_hours: target
-    });
+  await db.collection("users").doc(userDocId).update({
+    ojt_location: loc,
+    ojt_address: addr,
+    target_hours: target
+  });
 
-    updateGreetingCard();
+  updateGreetingCard();
 });
 
-// ======== SAVE LOG ENTRY ========
+// Save log entry
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
-    const date = document.getElementById("logDate").value;
-    const am_in = document.getElementById("amIn").value;
-    const am_out = document.getElementById("amOut").value;
-    const pm_in = document.getElementById("pmIn").value;
-    const pm_out = document.getElementById("pmOut").value;
-    if (!date || !am_in || !am_out || !pm_in || !pm_out) return alert("Fill all fields");
+  const date = document.getElementById("logDate").value;
+  const am_in = document.getElementById("amIn").value;
+  const am_out = document.getElementById("amOut").value;
+  const pm_in = document.getElementById("pmIn").value;
+  const pm_out = document.getElementById("pmOut").value;
+  if (!date || !am_in || !am_out || !pm_in || !pm_out) return alert("Fill all fields");
 
-    const userDocId = localStorage.getItem("userDocId");
-    await db.collection("users").doc(userDocId).collection("ojt_records").add({ date, am_in, am_out, pm_in, pm_out });
-    alert("Log saved!");
+  const userDocId = localStorage.getItem("userDocId");
+  await db.collection("users").doc(userDocId).collection("ojt_records").add({date, am_in, am_out, pm_in, pm_out});
+  alert("Log saved!");
+  loadLogbook();
+  updateGreetingCard();
+});
+
+// Load logbook
+async function loadLogbook() {
+  const userDocId = localStorage.getItem("userDocId");
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .orderBy("date", "asc")
+    .get();
+
+  const tbody = document.getElementById("logTableBody");
+  tbody.innerHTML = "";
+
+  let overallTotal = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    const am = safeParseTime(d.am_out) - safeParseTime(d.am_in);
+    const pm = safeParseTime(d.pm_out) - safeParseTime(d.pm_in);
+
+    const isAbsent = isNaN(am + pm);
+    const total = isAbsent ? "Absent" : (am + pm).toFixed(2);
+
+    if (!isAbsent) overallTotal += (am + pm);
+
+    const row = document.createElement("tr");
+    if (isAbsent) row.style.backgroundColor = "#fdd"; 
+
+    row.innerHTML = `
+      <td>${d.date}</td>
+      <td>${d.am_in || "-"}</td>
+      <td>${d.am_out || "-"}</td>
+      <td>${d.pm_in || "-"}</td>
+      <td>${d.pm_out || "-"}</td>
+      <td>${total}</td>
+      <td>
+        <button onclick="deleteLog('${doc.id}')" class="danger">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  localStorage.setItem("overallTotalHours", overallTotal);
+}
+
+// Delete log
+async function deleteLog(logId) {
+  const confirmDelete = confirm("Delete this log entry?");
+  if (!confirmDelete) return;
+
+  const userDocId = localStorage.getItem("userDocId");
+  try {
+    await db.collection("users").doc(userDocId).collection("ojt_records").doc(logId).delete();
+    alert("Log deleted!");
     loadLogbook();
     updateGreetingCard();
-});
-
-// ======== LOAD LOGBOOK ========
-async function loadLogbook() {
-    const userDocId = localStorage.getItem("userDocId");
-    const snapshot = await db.collection("users")
-        .doc(userDocId)
-        .collection("ojt_records")
-        .orderBy("date", "asc")
-        .get();
-
-    const tbody = document.getElementById("logTableBody");
-    tbody.innerHTML = "";
-
-    let overallTotal = 0;
-
-    snapshot.forEach(doc => {
-        const d = doc.data();
-        const am = safeParseTime(d.am_out) - safeParseTime(d.am_in);
-        const pm = safeParseTime(d.pm_out) - safeParseTime(d.pm_in);
-
-        const isAbsent = isNaN(am + pm);
-        const total = isAbsent ? "Absent" : (am + pm).toFixed(2);
-
-        if (!isAbsent) overallTotal += (am + pm);
-
-        const row = document.createElement("tr");
-        if (isAbsent) row.style.backgroundColor = "#fdd";
-
-        row.innerHTML = `
-            <td>${d.date}</td>
-            <td>${d.am_in || "-"}</td>
-            <td>${d.am_out || "-"}</td>
-            <td>${d.pm_in || "-"}</td>
-            <td>${d.pm_out || "-"}</td>
-            <td>${total}</td>
-            <td>
-                <button onclick="deleteLog('${doc.id}')" class="danger">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-
-    localStorage.setItem("overallTotalHours", overallTotal);
+  } catch (error) {
+    console.error(error);
+    alert("Error deleting log");
+  }
 }
 
-// ======== DELETE LOG ========
-async function deleteLog(logId) {
-    if (!confirm("Delete this log entry?")) return;
-
-    const userDocId = localStorage.getItem("userDocId");
-
-    try {
-        await db.collection("users")
-            .doc(userDocId)
-            .collection("ojt_records")
-            .doc(logId)
-            .delete();
-
-        alert("Log deleted!");
-        loadLogbook();
-        updateGreetingCard();
-    } catch (error) {
-        console.error(error);
-        alert("Error deleting log");
-    }
-}
-
-// ======== MARK ABSENT ========
+// Mark absent
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
-    const logDateInput = document.getElementById("logDate");
-    let date = logDateInput.value;
-    if (!date) {
-        const today = new Date();
-        date = today.toISOString().split("T")[0];
-        logDateInput.value = date;
-    }
+  const logDateInput = document.getElementById("logDate");
+  let date = logDateInput.value;
+  if (!date) {
+    const today = new Date();
+    date = today.toISOString().split("T")[0];
+    logDateInput.value = date;
+  }
 
-    const userDocId = localStorage.getItem("userDocId");
-    if (!userDocId) return alert("User not found");
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return alert("User not found");
 
-    try {
-        await db.collection("users")
-            .doc(userDocId)
-            .collection("ojt_records")
-            .add({
-                date,
-                am_in: "",
-                am_out: "",
-                pm_in: "",
-                pm_out: "",
-                status: "Absent"
-            });
-
-        alert(`Marked ${date} as Absent!`);
-        loadLogbook();
-        updateGreetingCard();
-    } catch (err) {
-        console.error(err);
-        alert("Error marking absent");
-    }
+  try {
+    await db.collection("users").doc(userDocId).collection("ojt_records").add({
+      date,
+      am_in: "",
+      am_out: "",
+      pm_in: "",
+      pm_out: "",
+      status: "Absent"
+    });
+    alert(`Marked ${date} as Absent!`);
+    loadLogbook();
+    updateGreetingCard();
+  } catch (err) {
+    console.error(err);
+    alert("Error marking absent");
+  }
 });
