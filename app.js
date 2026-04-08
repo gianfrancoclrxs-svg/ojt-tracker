@@ -132,34 +132,47 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async()=>{
   updateGreetingCard();
 });
 
-async function loadLogbook(){
-  const userDocId=localStorage.getItem("userDocId");
-  const snapshot=await db.collection("users").doc(userDocId).collection("ojt_records").orderBy("date","asc").get();
-  const tbody=document.getElementById("logTableBody");
-  tbody.innerHTML="";
+async function loadLogbook() {
+  const userDocId = localStorage.getItem("userDocId");
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .orderBy("date", "asc")
+    .get();
 
-  let overallTotal=0;
-  snapshot.forEach(doc=>{
-    const d=doc.data();
-    const am=parseTime(d.am_out)-parseTime(d.am_in);
-    const pm=parseTime(d.pm_out)-parseTime(d.pm_in);
-    const total=am+pm;
-    overallTotal += total;
-    const row = `
-    <tr>
-        <td>${d.date}</td>
-        <td>${d.am_in}</td>
-        <td>${d.am_out}</td>
-        <td>${d.pm_in}</td>
-        <td>${d.pm_out}</td>
-        <td>${total.toFixed(2)}</td>
-        <td>
-            <button onclick="deleteLog('${doc.id}')" class="danger">Delete</button>
-        </td>
-    </tr>`;
-    tbody.innerHTML += row;
+  const tbody = document.getElementById("logTableBody");
+  tbody.innerHTML = "";
+
+  let overallTotal = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    const am = parseTime(d.am_out) - parseTime(d.am_in);
+    const pm = parseTime(d.pm_out) - parseTime(d.pm_in);
+
+    const isAbsent = isNaN(am + pm);
+    const total = isAbsent ? "Absent" : (am + pm).toFixed(2);
+
+    if (!isAbsent) overallTotal += (am + pm);
+
+    const row = document.createElement("tr");
+    if (isAbsent) row.style.backgroundColor = "#fdd"; 
+
+    row.innerHTML = `
+      <td>${d.date}</td>
+      <td>${d.am_in || "-"}</td>
+      <td>${d.am_out || "-"}</td>
+      <td>${d.pm_in || "-"}</td>
+      <td>${d.pm_out || "-"}</td>
+      <td>${total}</td>
+      <td>
+        <button onclick="deleteLog('${doc.id}')" class="danger">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(row);
   });
-  localStorage.setItem("overallTotalHours",overallTotal);
+
+  localStorage.setItem("overallTotalHours", overallTotal);
 }
 
 async function deleteLog(logId) {
@@ -186,3 +199,38 @@ async function deleteLog(logId) {
     alert("Error deleting log");
   }
 }
+
+document.getElementById("absentBtn")?.addEventListener("click", async () => {
+  const logDateInput = document.getElementById("logDate");
+
+  let date = logDateInput.value;
+  if (!date) {
+    const today = new Date();
+    date = today.toISOString().split("T")[0]; 
+    logDateInput.value = date; 
+  }
+
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return alert("User not found");
+
+  try {
+    await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .add({
+        date,
+        am_in: "",
+        am_out: "",
+        pm_in: "",
+        pm_out: "",
+        status: "Absent"
+      });
+
+    alert(`Marked ${date} as Absent!`);
+    loadLogbook();
+    updateGreetingCard();
+  } catch (err) {
+    console.error(err);
+    alert("Error marking absent");
+  }
+});
