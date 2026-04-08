@@ -1,4 +1,3 @@
-/* FIREBASE */
 const firebaseConfig = {
   apiKey: "SECRETT",
   authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -10,7 +9,6 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-/* HELPERS */
 function getDayName(dateString) {
   const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
   return days[new Date(dateString).getDay()];
@@ -20,7 +18,6 @@ function getMonthName(monthNumber) {
   return ["January","February","March","April","May","June","July","August","September","October","November","December"][monthNumber - 1];
 }
 
-/* LOAD DTR */
 async function loadDTR(month, year) {
   try {
     const userDocId = localStorage.getItem("userDocId");
@@ -29,17 +26,14 @@ async function loadDTR(month, year) {
       return;
     }
 
-    // USER DATA
     const userDoc = await db.collection("users").doc(userDocId).get();
     const userData = userDoc.data();
 
     document.getElementById("companyName").textContent = userData?.ojt_location || "";
     document.getElementById("companyAddress").textContent = userData?.ojt_address || "";
 
-    // Month & Year
     document.querySelector(".underline").textContent = `${getMonthName(month)} ${year}`;
 
-    // RECORDS
     const snapshot = await db.collection("users")
       .doc(userDocId)
       .collection("ojt_records")
@@ -75,7 +69,6 @@ async function loadDTR(month, year) {
       tbody.appendChild(row);
     }
 
-    // 🔥 IMPORTANT: wait for DOM to render before printing
     setTimeout(() => {
       window.print();
     }, 1000);
@@ -86,14 +79,11 @@ async function loadDTR(month, year) {
   }
 }
 
-/* GET MONTH/YEAR FROM URL */
 const urlParams = new URLSearchParams(window.location.search);
 const month = parseInt(urlParams.get("month"));
 const year = parseInt(urlParams.get("year"));
 
-// fallback (if missing)
 const finalMonth = month || new Date().getMonth() + 1;
 const finalYear = year || new Date().getFullYear();
 
-/* RUN */
 loadDTR(finalMonth, finalYear);

@@ -1,4 +1,3 @@
-// app.js
 const firebaseConfig = {
     apiKey: "SECRETT",
     authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -7,7 +6,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Toggle between login/signup forms
 document.getElementById("showSignUp")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signUpForm").style.display = "block";
@@ -17,7 +15,6 @@ document.getElementById("showLogin")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "block";
 });
 
-// Sign Up
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   const fullName = document.getElementById("fullName").value.trim();
   const username = document.getElementById("signUpUsername").value.trim();
@@ -42,7 +39,6 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   window.location.href = "homepage.html";
 });
 
-// Login
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
   const username = document.getElementById("loginUsername").value.trim();
   const studentId = document.getElementById("loginStudentId").value.trim();
@@ -59,14 +55,12 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
   window.location.href = "homepage.html";
 });
 
-// Helper to parse "hh:mm" into hours
 function safeParseTime(t) {
   if (!t) return NaN;
   const [h, m] = t.split(":").map(Number);
   return h + m / 60;
 }
 
-// ✅ Your working getTotalRecordedHours()
 async function getTotalRecordedHours(userDocId) {
     const snapshot = await db.collection("users")
         .doc(userDocId)
@@ -93,7 +87,6 @@ async function getTotalRecordedHours(userDocId) {
     return { total, absentCount };
 }
 
-// Update homepage greeting & remaining hours
 async function updateGreetingCard() {
   const userDocId = localStorage.getItem("userDocId");
   if (!userDocId) return;
@@ -118,17 +111,14 @@ async function updateGreetingCard() {
 
   document.getElementById("companyName").textContent = data.ojt_location;
 
-  // After getting userDoc and calling getTotalRecordedHours()
   const { total } = await getTotalRecordedHours(userDocId);
   const targetHours = data.target_hours || 0;
 
   const remaining = targetHours - total;
 
-  // Display with 2 decimals
   document.getElementById("remainingHours").textContent = `${remaining.toFixed(2)}h Remaining`;
 }
 
-// Save OJT info
 document.getElementById("saveOjtBtn")?.addEventListener("click", async () => {
   const loc = document.getElementById("ojtCompanyName").value.trim();
   const addr = document.getElementById("ojtAddress").value.trim();
@@ -147,7 +137,6 @@ document.getElementById("saveOjtBtn")?.addEventListener("click", async () => {
   updateGreetingCard();
 });
 
-// Save log entry
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   const date = document.getElementById("logDate").value;
   const am_in = document.getElementById("amIn").value;
@@ -163,7 +152,6 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   updateGreetingCard();
 });
 
-// Load logbook
 async function loadLogbook() {
   const userDocId = localStorage.getItem("userDocId");
   const snapshot = await db.collection("users")
@@ -207,7 +195,6 @@ async function loadLogbook() {
   localStorage.setItem("overallTotalHours", overallTotal);
 }
 
-// Delete log
 async function deleteLog(logId) {
   const confirmDelete = confirm("Delete this log entry?");
   if (!confirmDelete) return;
@@ -224,7 +211,6 @@ async function deleteLog(logId) {
   }
 }
 
-// Mark absent
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
   const logDateInput = document.getElementById("logDate");
   let date = logDateInput.value;

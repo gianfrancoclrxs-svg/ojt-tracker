@@ -182,3 +182,15 @@ th, td {
 button.danger {
   background: #e53935;
 }
+.popup select {
+  width: 90%;
+  padding: 10px;
+  margin: 6px auto;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  display: block;
+  box-sizing: border-box;
+  background: white;
+  color: #222;
+  font-size: 1em;
+}
