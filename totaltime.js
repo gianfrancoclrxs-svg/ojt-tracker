@@ -5,11 +5,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const { total, absentCount } = await getTotalRecordedHours(userDocId);
 
-    const hours = Math.floor(total);
-    const minutes = Math.round((total - hours) * 60);
-
     document.getElementById("totalHours").textContent =
-        `${hours} hrs ${minutes} mins`;
+        total.toFixed(2) + " hrs";
 
     document.getElementById("totalAbsent").textContent =
         absentCount;

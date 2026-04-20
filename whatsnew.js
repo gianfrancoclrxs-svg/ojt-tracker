@@ -12,7 +12,6 @@ function createWhatsNewModal(onClose) {
         <ul>
             <li>Added half-day record system for tracking half-day attendance</li>
             <li>Added filtering by month and year in the logbook</li>
-            <li>Added minutes display in total time records</li>
             <li>Improved logbook UI with color indicators for attendance status</li>
             <li>Improved overall user interface and design</li>
             <li>Fixed bugs and improved system stability</li>
