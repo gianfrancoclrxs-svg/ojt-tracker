@@ -2,7 +2,7 @@ if (typeof db === "undefined") {
   console.error("Firestore db is not available in whatsnew.js");
 }
 
-const CURRENT_WHATSNEW_VERSION = "1.2.4"; 
+const CURRENT_WHATSNEW_VERSION = "1.4.4"; 
 
 function createWhatsNewModal(onClose) {
   const overlay = document.createElement("div");

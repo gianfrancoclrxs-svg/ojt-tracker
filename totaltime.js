@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const minutes = Math.round((total - hours) * 60);
 
     document.getElementById("totalHours").textContent =
-        `${hours} hours and ${minutes} mins`;
+        `${hours} hours & ${minutes} mins`;
 
     document.getElementById("totalAbsent").textContent =
         absentCount;

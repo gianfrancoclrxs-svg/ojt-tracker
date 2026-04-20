@@ -210,7 +210,6 @@ select:focus, input[type="number"]:focus {
   border-color: #2575fc;
 }
 
-/* FIX FILTER ALIGNMENT */
 .log-form select,
 .log-form input[type="number"] {
   width: 95%;
@@ -223,19 +222,16 @@ select:focus, input[type="number"]:focus {
   font-size: 14px;
 }
 
-/* Absent = Red */
 .absent-row {
   background: #ffebee;
   color: #c62828;
 }
 
-/* Half Day = Yellow */
 .halfday-row {
   background: #fff8e1;
   color: #8d6e00;
 }
 
-/* Clean table look (fix red line / border weirdness) */
 table {
   border-collapse: collapse;
 }

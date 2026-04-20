@@ -7,9 +7,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* =========================
-   AUTH UI TOGGLE
-========================= */
 document.getElementById("showSignUp")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signUpForm").style.display = "block";
@@ -20,9 +17,6 @@ document.getElementById("showLogin")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "block";
 });
 
-/* =========================
-   SIGN UP
-========================= */
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   const fullName = document.getElementById("fullName").value.trim();
   const username = document.getElementById("signUpUsername").value.trim();
@@ -53,9 +47,6 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   window.location.href = "homepage.html";
 });
 
-/* =========================
-   LOGIN
-========================= */
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
   const username = document.getElementById("loginUsername").value.trim();
   const studentId = document.getElementById("loginStudentId").value.trim();
@@ -75,18 +66,12 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
   window.location.href = "homepage.html";
 });
 
-/* =========================
-   TIME PARSER
-========================= */
 function safeParseTime(t) {
   if (!t) return NaN;
   const [h, m] = t.split(":").map(Number);
   return h + m / 60;
 }
 
-/* =========================
-   LOAD LOGBOOK
-========================= */
 async function loadLogbook(month = null, year = null) {
   const userDocId = localStorage.getItem("userDocId");
 
@@ -114,12 +99,8 @@ async function loadLogbook(month = null, year = null) {
 
     hasRecords = true;
 
-    // =========================
-    // 🔥 FIX: SAFE STATUS HANDLING
-    // =========================
     const statusRaw = (d.status || "").toString().trim().toLowerCase();
 
-    // OLD DATA SUPPORT (NO STATUS FIELD)
     const isEmptyTime =
       !d.am_in && !d.am_out &&
       !d.pm_in && !d.pm_out;
@@ -127,9 +108,6 @@ async function loadLogbook(month = null, year = null) {
     const isAbsent = statusRaw === "absent" || isEmptyTime;
     const isHalf = statusRaw.includes("half") || (!isEmptyTime && (!d.am_in || !d.pm_in));
 
-    // =========================
-    // TIME CALCULATION
-    // =========================
     const am = (d.am_in && d.am_out)
       ? safeParseTime(d.am_out) - safeParseTime(d.am_in)
       : 0;
@@ -142,9 +120,6 @@ async function loadLogbook(month = null, year = null) {
       ? "Absent"
       : (am + pm).toFixed(2);
 
-    // =========================
-    // ROW CREATE
-    // =========================
     const row = document.createElement("tr");
 
     if (isAbsent) {
@@ -168,9 +143,6 @@ async function loadLogbook(month = null, year = null) {
     tbody.appendChild(row);
   });
 
-  // =========================
-  // EMPTY STATE
-  // =========================
   if (!hasRecords) {
     tbody.innerHTML = `
       <tr>
@@ -182,9 +154,6 @@ async function loadLogbook(month = null, year = null) {
   }
 }
 
-/* =========================
-   DELETE LOG
-========================= */
 async function deleteLog(logId) {
   const confirmDelete = confirm("Delete this log entry?");
   if (!confirmDelete) return;
@@ -200,9 +169,6 @@ async function deleteLog(logId) {
   alert("Log deleted!");
 }
 
-/* =========================
-   ABSENT
-========================= */
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
   const logDateInput = document.getElementById("logDate");
 
@@ -231,9 +197,6 @@ document.getElementById("absentBtn")?.addEventListener("click", async () => {
   alert("Marked Absent!");
 });
 
-/* =========================
-   SAVE LOG
-========================= */
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   const date = document.getElementById("logDate").value;
   const am_in = document.getElementById("amIn").value;
@@ -262,9 +225,6 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
 
-/* =========================
-   HALF DAY SYSTEM (POPUP)
-========================= */
 async function saveHalfDay(type) {
   const date = document.getElementById("logDate").value;
   if (!date) return alert("Please select a date");
@@ -319,9 +279,6 @@ document.getElementById("closeHalfPopup")?.addEventListener("click", () => {
   document.getElementById("halfDayPopup").style.display = "none";
 });
 
-/* =========================
-   DEFAULT LOAD
-========================= */
 window.addEventListener("load", () => {
   const today = new Date();
 
@@ -342,15 +299,12 @@ async function updateGreetingCard() {
 
   const data = doc.data();
 
-  // NAME
   const name = data.full_name || "User";
   document.getElementById("greeting").textContent = `Hello, ${name}!`;
 
-  // COMPANY
   document.getElementById("companyName").textContent =
     data.ojt_location || "No Company Set";
 
-  // HOURS CALC (SAFE DEFAULT)
   const target = Number(data.target_hours || 0);
 
   const snapshot = await db.collection("users")
