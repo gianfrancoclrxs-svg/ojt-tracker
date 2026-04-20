@@ -332,3 +332,83 @@ window.addEventListener("load", () => {
 
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
+
+async function updateGreetingCard() {
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return;
+
+  const doc = await db.collection("users").doc(userDocId).get();
+  if (!doc.exists) return;
+
+  const data = doc.data();
+
+  // NAME
+  const name = data.full_name || "User";
+  document.getElementById("greeting").textContent = `Hello, ${name}!`;
+
+  // COMPANY
+  document.getElementById("companyName").textContent =
+    data.ojt_location || "No Company Set";
+
+  // HOURS CALC (SAFE DEFAULT)
+  const target = Number(data.target_hours || 0);
+
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .get();
+
+  let total = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+
+    const am = (d.am_in && d.am_out)
+      ? parseFloat(d.am_out) - parseFloat(d.am_in)
+      : 0;
+
+    const pm = (d.pm_in && d.pm_out)
+      ? parseFloat(d.pm_out) - parseFloat(d.pm_in)
+      : 0;
+
+    if (d.status !== "Absent") {
+      total += am + pm;
+    }
+  });
+
+  const remaining = Math.max(target - total, 0);
+
+  document.getElementById("remainingHours").textContent =
+    `${remaining.toFixed(2)}h Remaining`;
+}
+
+async function getTotalRecordedHours(userDocId) {
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .get();
+
+  let total = 0;
+  let absentCount = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+
+    if (d.status === "Absent") {
+      absentCount++;
+      return;
+    }
+
+    const am = (d.am_in && d.am_out)
+      ? safeParseTime(d.am_out) - safeParseTime(d.am_in)
+      : 0;
+
+    const pm = (d.pm_in && d.pm_out)
+      ? safeParseTime(d.pm_out) - safeParseTime(d.pm_in)
+      : 0;
+
+    total += am + pm;
+  });
+
+  return { total, absentCount };
+}

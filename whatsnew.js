@@ -1,4 +1,8 @@
-const CURRENT_WHATSNEW_VERSION = "1.1.3"; 
+if (typeof db === "undefined") {
+  console.error("Firestore db is not available in whatsnew.js");
+}
+
+const CURRENT_WHATSNEW_VERSION = "1.2.4"; 
 
 function createWhatsNewModal(onClose) {
   const overlay = document.createElement("div");
@@ -12,6 +16,8 @@ function createWhatsNewModal(onClose) {
         <ul>
             <li>Added half-day record system for tracking half-day attendance</li>
             <li>Added filtering by month and year in the logbook</li>
+            <li>Added minutes display in total time records</li>
+            <li>Added new ratings and feedback system</li>
             <li>Improved logbook UI with color indicators for attendance status</li>
             <li>Improved overall user interface and design</li>
             <li>Fixed bugs and improved system stability</li>
