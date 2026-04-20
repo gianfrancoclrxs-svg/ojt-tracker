@@ -54,21 +54,26 @@ async function loadDTR(month, year) {
       const dateStr = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const record = recordsMap[dateStr];
 
+      const hasRecord =
+        record &&
+        record.status !== "Absent" &&
+        (record.am_in || record.am_out || record.pm_in || record.pm_out);
+
       const row = document.createElement("tr");
 
       row.innerHTML = `
         <td>${day}</td>
-        <td>${record ? getDayName(dateStr) : ""}</td>
-        <td>${record?.am_in || ""}</td>
-        <td>${record?.am_out || ""}</td>
-        <td>${record?.pm_in || ""}</td>
-        <td>${record?.pm_out || ""}</td>
+        <td>${hasRecord ? getDayName(dateStr) : ""}</td>
+        <td>${hasRecord ? record.am_in : ""}</td>
+        <td>${hasRecord ? record.am_out : ""}</td>
+        <td>${hasRecord ? record.pm_in : ""}</td>
+        <td>${hasRecord ? record.pm_out : ""}</td>
         <td></td>
       `;
 
       tbody.appendChild(row);
     }
-
+  
     setTimeout(() => {
       window.print();
     }, 1000);

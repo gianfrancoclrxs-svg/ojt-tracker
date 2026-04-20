@@ -31,19 +31,44 @@
     <input type="date" id="logDate">
 
     <label>AM Time In</label>
-    <input type="time" id="amIn">
+    <input type="time" id="amIn" value="08:00">
 
     <label>AM Time Out</label>
-    <input type="time" id="amOut">
+    <input type="time" id="amOut" value="12:00">
 
     <label>PM Time In</label>
-    <input type="time" id="pmIn">
+    <input type="time" id="pmIn" value="13:00">
 
     <label>PM Time Out</label>
-    <input type="time" id="pmOut">
+    <input type="time" id="pmOut" value="17:00">
 
     <button id="saveLogBtn">Save Log</button>
+    <button id="halfDayBtn" style="background:#ffb300;color:black;">Mark Half Day</button>
     <button id="absentBtn" style="background:red;color:white;">Mark Absent</button>
+  </div>
+
+  <!-- FILTER SECTION (NEW) -->
+  <div class="log-form card">
+    <label>Filter by Month & Year</label>
+
+    <select id="filterMonth">
+      <option value="1">January</option>
+      <option value="2">February</option>
+      <option value="3">March</option>
+      <option value="4">April</option>
+      <option value="5">May</option>
+      <option value="6">June</option>
+      <option value="7">July</option>
+      <option value="8">August</option>
+      <option value="9">September</option>
+      <option value="10">October</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
+    </select>
+
+    <input type="number" id="filterYear" value="2026" min="2000" max="2100">
+
+    <button id="filterBtn">Show Logs</button>
   </div>
 
   <h3>Previous Logs</h3>
@@ -69,9 +94,27 @@
   </div>
 </div>
 
-<!-- POPUP -->
-<div id="dtrPopup" class="popup-overlay" style="display:none;">
+<div id="halfDayPopup" class="popup-overlay" style="display:none;">
   <div class="popup">
+    <h2>Select Half Day Type</h2>
+
+    <button id="amHalfBtn" style="background:#ffb300;color:black;">
+      AM Half Day (8:00–12:00)
+    </button>
+
+    <button id="pmHalfBtn" style="background:#ffb300;color:black;margin-top:10px;">
+      PM Half Day (1:00–5:00)
+    </button>
+
+    <button id="closeHalfPopup" style="background:#e53935;margin-top:10px;">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="dtrPopup" class="dtr-overlay">
+  <div class="dtr-modal">
     <h2>Select Month & Year</h2>
 
     <label>Month</label>
@@ -91,23 +134,29 @@
     </select>
 
     <label>Year</label>
-    <input type="number" id="dtrYear" min="2000" max="2100" value="2026" placeholder="YYYY">
+    <input type="number" id="dtrYear" min="2000" max="2100" value="2026">
 
     <button id="generateDtrBtn">Generate DTR</button>
     <button id="closeDtrPopup" style="background:#e53935;">Cancel</button>
   </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
 <script src="app.js"></script>
 
 <script>
-loadLogbook();
+// DEFAULT LOAD (current month)
+const today = new Date();
+loadLogbook(today.getMonth() + 1, today.getFullYear());
 
-/* DARK MODE */
+document.getElementById("filterMonth").value = today.getMonth() + 1;
+document.getElementById("filterYear").value = today.getFullYear();
+
+// load default logbook
+loadLogbook(today.getMonth() + 1, today.getFullYear());
+
+// DARK MODE
 document.getElementById("modeToggle").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   const icon = document.querySelector("#modeToggle i");
@@ -115,22 +164,28 @@ document.getElementById("modeToggle").addEventListener("click", () => {
   icon.classList.toggle("fa-sun");
 });
 
-/* AUTH CHECK */
+// AUTH CHECK
 if (localStorage.getItem("loggedIn") !== "true" || !localStorage.getItem("userDocId")) {
   location.href = "index.html";
 }
 
-/* OPEN POPUP */
+// FILTER BUTTON
+document.getElementById("filterBtn").addEventListener("click", () => {
+  const month = parseInt(document.getElementById("filterMonth").value);
+  const year = parseInt(document.getElementById("filterYear").value);
+
+  loadLogbook(month, year);
+});
+
+// PRINT DTR POPUP
 document.getElementById("printDtrBtn").addEventListener("click", () => {
   document.getElementById("dtrPopup").style.display = "flex";
 });
 
-/* CLOSE POPUP */
 document.getElementById("closeDtrPopup").addEventListener("click", () => {
   document.getElementById("dtrPopup").style.display = "none";
 });
 
-/* 🔥 GENERATE DTR (NEW FIXED VERSION) */
 document.getElementById("generateDtrBtn").addEventListener("click", () => {
   const month = document.getElementById("dtrMonth").value;
   const year = document.getElementById("dtrYear").value;
@@ -142,21 +197,19 @@ document.getElementById("generateDtrBtn").addEventListener("click", () => {
 
   document.getElementById("dtrPopup").style.display = "none";
 
-  // OPEN DTR PAGE WITH PARAMETERS
   const win = window.open(`dtr.html?month=${month}&year=${year}`, "_blank");
 
-  // WAIT UNTIL PAGE + FIRESTORE LOADS
   const timer = setInterval(() => {
     if (win.document.readyState === "complete") {
       clearInterval(timer);
-
       setTimeout(() => {
         win.focus();
-        win.print(); // 🔥 PRINT USING YOUR REAL DESIGN
-      }, 1200); // give Firebase time
+        win.print();
+      }, 1200);
     }
   }, 500);
 });
+
 </script>
 
 </body>
