@@ -8,7 +8,7 @@ if (typeof db === "undefined") {
 // ================= VERSION CONTROL =================
 // IMPORTANT:
 // update this manually every time you release a new feature batch
-const CURRENT_WHATSNEW_VERSION = "2.0.0";
+const CURRENT_WHATSNEW_VERSION = "2.0.1";
 
 // ================= WHAT'S NEW MODAL =================
 // reusable popup that shows app updates
