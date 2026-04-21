@@ -1,4 +1,7 @@
+// ================= TOP BAR STYLES =================
+// global styling injected for reusable top navigation component
 const style = document.createElement("style");
+
 style.textContent = `
     .top-bar {
         display: grid;
@@ -34,30 +37,40 @@ style.textContent = `
     }
 
     #backBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
     }
 `;
 
 document.head.appendChild(style);
 
+// ================= TOP BAR INIT =================
+// builds the navbar dynamically depending on current page
 document.addEventListener("DOMContentLoaded", () => {
+
+    // create main container
     const topBar = document.createElement("div");
     topBar.className = "top-bar";
-    const isHomePage = window.location.pathname.includes("homepage.html") 
-    || window.location.pathname === "/" 
-    || window.location.pathname.endsWith("index.html");
 
-  // LEFT SIDE
+    // IMPORTANT:
+    // detects if user is on homepage → changes behavior (settings vs back button)
+    const isHomePage =
+        window.location.pathname.includes("homepage.html") ||
+        window.location.pathname === "/" ||
+        window.location.pathname.endsWith("index.html");
+
+    // ================= LEFT SIDE =================
     const leftSide = document.createElement("div");
-        leftSide.className = "left-side";
+    leftSide.className = "left-side";
 
-        if (isHomePage) {
+    if (isHomePage) {
+
         // SETTINGS BUTTON (homepage only)
         const settingsBtn = document.createElement("button");
         settingsBtn.id = "settingsBtn";
+
         settingsBtn.onclick = () => {
             window.location.href = "settings.html";
         };
@@ -68,10 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
         settingsBtn.appendChild(gearIcon);
         leftSide.appendChild(settingsBtn);
 
-        } else {
-        // BACK BUTTON (other pages)
+    } else {
+
+        // BACK BUTTON (non-home pages)
+        // simple navigation fallback using browser history
         const backBtn = document.createElement("button");
         backBtn.id = "backBtn";
+
         backBtn.onclick = () => {
             window.history.back();
         };
@@ -81,34 +97,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
         backBtn.appendChild(backIcon);
         leftSide.appendChild(backBtn);
-        }
+    }
 
-  // CENTER (APP NAME)
-  const center = document.createElement("div");
-  center.className = "center-title";
+    // ================= CENTER TITLE =================
+    // app branding (safe to change anytime)
+    const center = document.createElement("div");
+    center.className = "center-title";
 
-  const appName = document.createElement("span");
-  appName.textContent = "OJT Tracker"; // 👈 change this anytime
+    const appName = document.createElement("span");
+    appName.textContent = "OJT Tracker";
 
-  center.appendChild(appName);
+    center.appendChild(appName);
 
-  // RIGHT SIDE
-  const rightSide = document.createElement("div");
-  rightSide.className = "right-side";
+    // ================= RIGHT SIDE =================
+    // theme toggle placeholder (dark mode feature hook)
+    const rightSide = document.createElement("div");
+    rightSide.className = "right-side";
 
-  const modeToggle = document.createElement("span");
-  modeToggle.id = "modeToggle";
+    const modeToggle = document.createElement("span");
+    modeToggle.id = "modeToggle";
 
-  const moonIcon = document.createElement("i");
-  moonIcon.className = "fa-regular fa-moon";
+    const moonIcon = document.createElement("i");
+    moonIcon.className = "fa-regular fa-moon";
 
-  modeToggle.appendChild(moonIcon);
-  rightSide.appendChild(modeToggle);
+    modeToggle.appendChild(moonIcon);
+    rightSide.appendChild(modeToggle);
 
-  // ASSEMBLE
-  topBar.appendChild(leftSide);
-  topBar.appendChild(center);
-  topBar.appendChild(rightSide);
+    // ================= ASSEMBLY =================
+    topBar.appendChild(leftSide);
+    topBar.appendChild(center);
+    topBar.appendChild(rightSide);
 
-  document.getElementById("topBarContainer").appendChild(topBar);
+    // IMPORTANT:
+    // requires #topBarContainer in HTML or nothing will render (silent fail risk)
+    document.getElementById("topBarContainer").appendChild(topBar);
 });

@@ -1,6 +1,9 @@
+
 // ===============================
-// FIREBASE INITIALIZATION
+// FIREBASE INIT
 // ===============================
+// IMPORTANT:
+// if this fails, EVERYTHING below will break silently
 const firebaseConfig = {
   apiKey: "SECRETT",
   authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -12,16 +15,15 @@ const db = firebase.firestore();
 
 
 // ===============================
-// UI TOGGLE (LOGIN / SIGNUP)
+// AUTH UI TOGGLE (LOGIN / SIGNUP)
 // ===============================
+// simple UI switch between forms (no backend logic here)
 
-// Switch to Sign Up form
 document.getElementById("showSignUp")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signUpForm").style.display = "block";
 });
 
-// Switch back to Login form
 document.getElementById("showLogin")?.addEventListener("click", () => {
   document.getElementById("signUpForm").style.display = "none";
   document.getElementById("loginForm").style.display = "block";
@@ -29,26 +31,28 @@ document.getElementById("showLogin")?.addEventListener("click", () => {
 
 
 // ===============================
-// SIGN UP FUNCTION
+// SIGN UP FLOW
 // ===============================
+// creates user document in Firestore + stores session locally
+
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
+
   const fullName = document.getElementById("fullName").value.trim();
   const username = document.getElementById("signUpUsername").value.trim();
   const email = document.getElementById("signUpEmail").value.trim();
   const studentId = document.getElementById("signUpStudentId").value.trim();
 
-  // Validate input fields
   if (!fullName || !username || !email || !studentId)
     return alert("Fill all fields");
 
-  // Check if username already exists
+  // IMPORTANT:
+  // username uniqueness check (basic but works for student app scale)
   const existing = await db.collection("users")
     .where("username", "==", username)
     .get();
 
   if (!existing.empty) return alert("Username taken");
 
-  // Create new user in Firestore
   const userRef = await db.collection("users").add({
     full_name: fullName,
     username,
@@ -59,26 +63,26 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
     target_hours: 0
   });
 
-  // Save session locally
   localStorage.setItem("userDocId", userRef.id);
   localStorage.setItem("loggedIn", "true");
 
-  // Redirect to homepage
   window.location.href = "./homepage.html";
 });
 
 
 // ===============================
-// LOGIN FUNCTION
+// LOGIN FLOW
 // ===============================
+// matches username + student ID (simple auth system)
+
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
+
   const username = document.getElementById("loginUsername").value.trim();
   const studentId = document.getElementById("loginStudentId").value.trim();
 
   if (!username || !studentId)
     return alert("Fill all fields");
 
-  // Check user credentials
   const query = await db.collection("users")
     .where("username", "==", username)
     .where("student_id", "==", studentId)
@@ -86,7 +90,6 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
 
   if (query.empty) return alert("Invalid login");
 
-  // Save session
   localStorage.setItem("userDocId", query.docs[0].id);
   localStorage.setItem("loggedIn", "true");
 
@@ -95,8 +98,10 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
 
 
 // ===============================
-// TIME PARSER HELPER
+// TIME HELPERS
 // ===============================
+// converts "HH:MM" → decimal hours
+
 function safeParseTime(t) {
   if (!t) return NaN;
   const [h, m] = t.split(":").map(Number);
@@ -105,9 +110,12 @@ function safeParseTime(t) {
 
 
 // ===============================
-// LOAD OJT LOGBOOK
+// LOGBOOK LOADER
 // ===============================
+// renders attendance table + supports filtering by month/year
+
 async function loadLogbook(month = null, year = null) {
+
   const userDocId = localStorage.getItem("userDocId");
 
   const snapshot = await db.collection("users")
@@ -118,27 +126,27 @@ async function loadLogbook(month = null, year = null) {
 
   const tbody = document.getElementById("logTableBody");
   if (!tbody) return;
+
   tbody.innerHTML = "";
 
   let hasRecords = false;
 
   snapshot.forEach(doc => {
+
     const d = doc.data();
 
     const recordDate = new Date(d.date);
     const recordMonth = recordDate.getMonth() + 1;
     const recordYear = recordDate.getFullYear();
 
-    // Filter by month/year if provided
     if (month && year) {
       if (recordMonth !== month || recordYear !== year) return;
     }
 
     hasRecords = true;
 
-    const statusRaw = (d.status || "").toString().trim().toLowerCase();
+    const statusRaw = (d.status || "").toLowerCase();
 
-    // Detect empty / absent / half day
     const isEmptyTime =
       !d.am_in && !d.am_out &&
       !d.pm_in && !d.pm_out;
@@ -146,7 +154,6 @@ async function loadLogbook(month = null, year = null) {
     const isAbsent = statusRaw === "absent" || isEmptyTime;
     const isHalf = statusRaw.includes("half") || (!isEmptyTime && (!d.am_in || !d.pm_in));
 
-    // Compute AM / PM hours
     const am = (d.am_in && d.am_out)
       ? safeParseTime(d.am_out) - safeParseTime(d.am_in)
       : 0;
@@ -155,20 +162,13 @@ async function loadLogbook(month = null, year = null) {
       ? safeParseTime(d.pm_out) - safeParseTime(d.pm_in)
       : 0;
 
-    const total = isAbsent
-      ? "Absent"
-      : (am + pm).toFixed(2);
+    const total = isAbsent ? "Absent" : (am + pm).toFixed(2);
 
     const row = document.createElement("tr");
 
-    // Row styling
-    if (isAbsent) {
-      row.classList.add("absent-row");
-    } else if (isHalf) {
-      row.classList.add("halfday-row");
-    }
+    if (isAbsent) row.classList.add("absent-row");
+    else if (isHalf) row.classList.add("halfday-row");
 
-    // Fill table row
     row.innerHTML = `
       <td>${d.date}</td>
       <td>${d.am_in || "-"}</td>
@@ -184,7 +184,6 @@ async function loadLogbook(month = null, year = null) {
     tbody.appendChild(row);
   });
 
-  // If no records found
   if (!hasRecords) {
     tbody.innerHTML = `
       <tr>
@@ -198,9 +197,12 @@ async function loadLogbook(month = null, year = null) {
 
 
 // ===============================
-// DELETE LOG ENTRY
+// DELETE LOG
 // ===============================
+// removes single attendance record
+
 async function deleteLog(logId) {
+
   const confirmDelete = confirm("Delete this log entry?");
   if (!confirmDelete) return;
 
@@ -217,17 +219,18 @@ async function deleteLog(logId) {
 
 
 // ===============================
-// MARK ABSENT
+// ABSENT MARKER
 // ===============================
+// quick insert for absent days
+
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
+
   const logDateInput = document.getElementById("logDate");
 
   let date = logDateInput.value;
 
-  // default to today
   if (!date) {
-    const today = new Date();
-    date = today.toISOString().split("T")[0];
+    date = new Date().toISOString().split("T")[0];
     logDateInput.value = date;
   }
 
@@ -250,14 +253,13 @@ document.getElementById("absentBtn")?.addEventListener("click", async () => {
 
 
 // ===============================
-// SAVE FULL DAY LOG
+// SAVE FULL DAY
 // ===============================
+// stores complete attendance record
+
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
+
   const date = document.getElementById("logDate").value;
-  const am_in = document.getElementById("amIn").value;
-  const am_out = document.getElementById("amOut").value;
-  const pm_in = document.getElementById("pmIn").value;
-  const pm_out = document.getElementById("pmOut").value;
 
   if (!date) return alert("Please select a date");
 
@@ -268,10 +270,10 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
     .collection("ojt_records")
     .add({
       date,
-      am_in: am_in || "",
-      am_out: am_out || "",
-      pm_in: pm_in || "",
-      pm_out: pm_out || "",
+      am_in: document.getElementById("amIn").value || "",
+      am_out: document.getElementById("amOut").value || "",
+      pm_in: document.getElementById("pmIn").value || "",
+      pm_out: document.getElementById("pmOut").value || "",
       status: "Present"
     });
 
@@ -283,26 +285,24 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
 
 
 // ===============================
-// HALF DAY LOGIC
+// HALF DAY SYSTEM
 // ===============================
+// splits AM / PM half-day logic
+
 async function saveHalfDay(type) {
+
   const date = document.getElementById("logDate").value;
   if (!date) return alert("Please select a date");
 
   const userDocId = localStorage.getItem("userDocId");
-
-  const am_in = document.getElementById("amIn").value;
-  const am_out = document.getElementById("amOut").value;
-  const pm_in = document.getElementById("pmIn").value;
-  const pm_out = document.getElementById("pmOut").value;
 
   let data;
 
   if (type === "AM") {
     data = {
       date,
-      am_in: am_in || "08:00",
-      am_out: am_out || "12:00",
+      am_in: "08:00",
+      am_out: "12:00",
       pm_in: "",
       pm_out: "",
       status: "Half Day (AM)"
@@ -312,8 +312,8 @@ async function saveHalfDay(type) {
       date,
       am_in: "",
       am_out: "",
-      pm_in: pm_in || "13:00",
-      pm_out: pm_out || "17:00",
+      pm_in: "13:00",
+      pm_out: "17:00",
       status: "Half Day (PM)"
     };
   }
@@ -331,24 +331,12 @@ async function saveHalfDay(type) {
 
 
 // ===============================
-// HALF DAY UI EVENTS
+// INITIAL LOAD
 // ===============================
-document.getElementById("halfDayBtn")?.addEventListener("click", () => {
-  document.getElementById("halfDayPopup").style.display = "flex";
-});
+// sets default date + loads table
 
-document.getElementById("amHalfBtn")?.addEventListener("click", () => saveHalfDay("AM"));
-document.getElementById("pmHalfBtn")?.addEventListener("click", () => saveHalfDay("PM"));
-
-document.getElementById("closeHalfPopup")?.addEventListener("click", () => {
-  document.getElementById("halfDayPopup").style.display = "none";
-});
-
-
-// ===============================
-// PAGE LOAD INIT
-// ===============================
 window.addEventListener("load", () => {
+
   const today = new Date();
 
   const dateInput = document.getElementById("logDate");
@@ -361,9 +349,12 @@ window.addEventListener("load", () => {
 
 
 // ===============================
-// GREETING + DASHBOARD INFO
+// DASHBOARD GREETING
 // ===============================
+// updates user info + remaining hours
+
 async function updateGreetingCard() {
+
   const userDocId = localStorage.getItem("userDocId");
   if (!userDocId) return;
 
@@ -372,8 +363,8 @@ async function updateGreetingCard() {
 
   const data = doc.data();
 
-  const name = data.username || "User";
-  document.getElementById("greeting").textContent = `Hello, ${name}!`;
+  document.getElementById("greeting").textContent =
+    `Hello, ${data.username || "User"}!`;
 
   document.getElementById("companyName").textContent =
     data.ojt_location || "No Company Set";
@@ -388,17 +379,18 @@ async function updateGreetingCard() {
   let total = 0;
 
   snapshot.forEach(doc => {
+
     const d = doc.data();
 
-    const am = (d.am_in && d.am_out)
-      ? parseFloat(d.am_out) - parseFloat(d.am_in)
-      : 0;
-
-    const pm = (d.pm_in && d.pm_out)
-      ? parseFloat(d.pm_out) - parseFloat(d.pm_in)
-      : 0;
-
     if (d.status !== "Absent") {
+      const am = (d.am_in && d.am_out)
+        ? parseFloat(d.am_out) - parseFloat(d.am_in)
+        : 0;
+
+      const pm = (d.pm_in && d.pm_out)
+        ? parseFloat(d.pm_out) - parseFloat(d.pm_in)
+        : 0;
+
       total += am + pm;
     }
   });
@@ -411,9 +403,12 @@ async function updateGreetingCard() {
 
 
 // ===============================
-// TOTAL HOURS CALCULATION
+// TOTAL HOURS CALC
 // ===============================
+// reusable helper for dashboards + charts
+
 async function getTotalRecordedHours(userDocId) {
+
   const snapshot = await db.collection("users")
     .doc(userDocId)
     .collection("ojt_records")
@@ -423,6 +418,7 @@ async function getTotalRecordedHours(userDocId) {
   let absentCount = 0;
 
   snapshot.forEach(doc => {
+
     const d = doc.data();
 
     if (d.status === "Absent") {

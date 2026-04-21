@@ -1,11 +1,15 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // ================= INIT =================
+  // runs only when DOM is fully loaded
   const userDocId = localStorage.getItem("userDocId");
+
+  // IMPORTANT:
+  // no userDocId = no dashboard logic (prevents crash + useless DB calls)
   if (!userDocId) return;
 
-  // =========================
-  // GLOBAL STYLE
-  // =========================
+  // ================= STYLES (DYNAMIC UI PATCH) =================
+  // injecting dashboard styles directly via JS (no external CSS needed for this section)
   const style = document.createElement("style");
 
   style.textContent = `
@@ -64,31 +68,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.head.appendChild(style);
 
-  // =========================
-  // FETCH DATA
-  // =========================
+  // ================= FIREBASE USER FETCH =================
+  // getting user data from Firestore
   const userDoc = await db.collection("users").doc(userDocId).get();
   const data = userDoc.data();
 
   const { total } = await getTotalRecordedHours(userDocId);
 
+  // ================= PROGRESS CALCULATION =================
   const target = Number(data.target_hours || 0);
   const remaining = Math.max(target - total, 0);
   const progress = target > 0 ? (total / target) * 100 : 0;
 
-  // =========================
-  // FINISH DATE
-  // =========================
   const hoursPerDay = 8;
   const daysNeeded = Math.ceil(remaining / hoursPerDay);
 
+  // IMPORTANT:
+  // assumes 8-hour workdays (change here if company rules differ)
   function addWorkDays(start, days) {
     let d = new Date(start);
+
     while (days > 0) {
       d.setDate(d.getDate() + 1);
       const day = d.getDay();
+
+      // skip weekends (Sat + Sun)
       if (day !== 0 && day !== 6) days--;
     }
+
     return d;
   }
 
@@ -100,9 +107,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     day: "numeric"
   });
 
-  // =========================
-  // STATUS TEXT
-  // =========================
+  // ================= STATUS ENGINE =================
+  // determines user progress state (basically mood of the dashboard 😄)
   let statusText = "";
   let statusColor = "#4caf50";
 
@@ -120,9 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     statusColor = "#1b5e20";
   }
 
-  // =========================
-  // STATUS CARD
-  // =========================
   document.getElementById("statusCard").innerHTML = `
     <div class="title">Progress Status</div>
 
@@ -144,219 +147,195 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
   `;
 
-
-// =========================
-// SAFE TIME PARSER
-// =========================
-function safeParse(t) {
-  if (!t || !t.includes(":")) return 0;
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
-}
-
-// =========================
-// GET LAST 9 DAYS (EXCLUDING TODAY)
-// =========================
-function getLast9DaysExcludingToday() {
-  const arr = [];
-  const today = new Date();
-
-  for (let i = 9; i >= 1; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-
-    arr.push({
-      date: `${yyyy}-${mm}-${dd}`,
-      jsDate: new Date(d),
-    });
+  // ================= TIME PARSING HELPERS =================
+  // converts "08:30" → minutes
+  function safeParse(t) {
+    if (!t || !t.includes(":")) return 0;
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
   }
 
-  return arr;
-}
+  // ================= LAST 9 DAYS GENERATOR =================
+  // used for burnout + activity pattern tracking
+  function getLast9DaysExcludingToday() {
+    const arr = [];
+    const today = new Date();
 
-const daysWindow = getLast9DaysExcludingToday();
+    for (let i = 9; i >= 1; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
 
-// =========================
-// FETCH FIRESTORE RECORDS
-// =========================
-const snap = await db.collection("users")
-  .doc(userDocId)
-  .collection("ojt_records")
-  .get();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
 
-const map = {};
+      arr.push({
+        date: `${yyyy}-${mm}-${dd}`,
+        jsDate: new Date(d),
+      });
+    }
 
-// convert records → hours
-snap.forEach(doc => {
-  const d = doc.data();
-  if (!d.date) return;
+    return arr;
+  }
 
-  const am = (d.am_in && d.am_out)
-    ? safeParse(d.am_out) - safeParse(d.am_in)
-    : 0;
+  const daysWindow = getLast9DaysExcludingToday();
 
-  const pm = (d.pm_in && d.pm_out)
-    ? safeParse(d.pm_out) - safeParse(d.pm_in)
-    : 0;
+  // ================= FIRESTORE LOG FETCH =================
+  const snap = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .get();
 
-  map[d.date] = (am + pm) / 60;
-});
+  const map = {};
 
-// =========================
-// BUILD FINAL GRID
-// =========================
-const grid = daysWindow.map(d => {
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (!d.date) return;
 
-  const hours = map[d.date];
+    const am = (d.am_in && d.am_out)
+      ? safeParse(d.am_out) - safeParse(d.am_in)
+      : 0;
 
-  let label = new Date(d.date).toLocaleDateString("en-US", {
-    weekday: "short"
+    const pm = (d.pm_in && d.pm_out)
+      ? safeParse(d.pm_out) - safeParse(d.pm_in)
+      : 0;
+
+    map[d.date] = (am + pm) / 60;
   });
 
-  if (hours === undefined) {
+  const grid = daysWindow.map(d => {
+
+    const hours = map[d.date];
+
+    let label = new Date(d.date).toLocaleDateString("en-US", {
+      weekday: "short"
+    });
+
     return {
       date: d.date,
-      hours: 0,
+      hours: hours ?? 0,
       label
     };
+  });
+
+  // ================= BURNOUT ANALYTICS ENGINE =================
+  const heavy = grid.filter(d => d.hours >= 9).length;
+  const normal = grid.filter(d => d.hours >= 6 && d.hours < 9).length;
+  const light = grid.filter(d => d.hours > 0 && d.hours < 6).length;
+  const inactive = grid.filter(d => d.hours === 0).length;
+
+  let burnoutText = "Healthy pace";
+  let burnoutColor = "#4caf50";
+  let insight = "Based on your last 9 completed days";
+
+  if (heavy >= 4) {
+    burnoutText = "Burnout Risk";
+    burnoutColor = "#f44336";
+    insight = "You’ve had multiple intense workdays recently";
+  } else if (light >= 4) {
+    burnoutText = "Low Energy Pattern";
+    burnoutColor = "#9e9e9e";
+    insight = "Your recent workload has been lighter than usual";
+  } else if (normal >= 5) {
+    burnoutText = "Steady Progress";
+    burnoutColor = "#4caf50";
+    insight = "Your consistency is stable";
   }
 
-  return {
-    date: d.date,
-    hours,
-    label
-  };
-});
+  // ================= UI DOT GENERATION =================
+  // visual representation of activity per day
+  const dots = grid.map(d => {
 
-// =========================
-// ANALYSIS
-// =========================
-const heavy = grid.filter(d => d.hours >= 9).length;
-const normal = grid.filter(d => d.hours >= 6 && d.hours < 9).length;
-const light = grid.filter(d => d.hours > 0 && d.hours < 6).length;
-const inactive = grid.filter(d => d.hours === 0).length;
+    let color = "#bdbdbd";
 
-let burnoutText = "Healthy pace";
-let burnoutColor = "#4caf50";
-let insight = "Based on your last 9 completed days";
+    if (d.hours >= 9) color = "#f44336";
+    else if (d.hours >= 6) color = "#4caf50";
+    else if (d.hours > 0) color = "#ffb300";
 
-if (heavy >= 4) {
-  burnoutText = "Burnout Risk";
-  burnoutColor = "#f44336";
-  insight = "You’ve had multiple intense workdays recently";
-} else if (light >= 4) {
-  burnoutText = "Low Energy Pattern";
-  burnoutColor = "#9e9e9e";
-  insight = "Your recent workload has been lighter than usual";
-} else if (normal >= 5) {
-  burnoutText = "Steady Progress";
-  burnoutColor = "#4caf50";
-  insight = "Your consistency is stable";
-}
-
-// =========================
-// DOTS 3x3 GRID
-// =========================
-const dots = grid.map(d => {
-
-  let color = "#bdbdbd";
-
-  if (d.hours >= 9) color = "#f44336";
-  else if (d.hours >= 6) color = "#4caf50";
-  else if (d.hours > 0) color = "#ffb300";
-
-  return `
-    <div style="
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      width:30px;
-      gap:3px;
-    ">
+    return `
       <div style="
-        width:14px;
-        height:14px;
-        border-radius:50%;
-        background:${color};
-      "></div>
-
-      <div style="
-        font-size:9px;
-        color:#777;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        width:30px;
+        gap:3px;
       ">
-        ${d.label}
+        <div style="
+          width:14px;
+          height:14px;
+          border-radius:50%;
+          background:${color};
+        "></div>
+
+        <div style="
+          font-size:9px;
+          color:#777;
+        ">
+          ${d.label}
+        </div>
+      </div>
+    `;
+  });
+
+  const row1 = dots.slice(0, 3).join("");
+  const row2 = dots.slice(3, 6).join("");
+  const row3 = dots.slice(6, 9).join("");
+
+  document.getElementById("burnoutCard").innerHTML = `
+    <div class="title">Burnout Monitor</div>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin:10px 0;">
+      <div style="display:flex; gap:12px; justify-content:center;">
+        ${row1}
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:center;">
+        ${row2}
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:center;">
+        ${row3}
       </div>
     </div>
+
+    <div class="big" style="color:${burnoutColor}">
+      ${burnoutText}
+    </div>
+
+    <div class="sub">
+      ${insight}
+    </div>
+
+    <div style="
+      margin-top:12px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:10px;
+      color:#666;
+    ">
+
+      <div style="display:flex; align-items:center; gap:4px;">
+        <span style="color:#f44336;">●</span>
+        Heavy (9h+)
+      </div>
+
+      <div style="display:flex; align-items:center; gap:4px;">
+        <span style="color:#4caf50;">●</span>
+        Normal (6–8h)
+      </div>
+
+      <div style="display:flex; align-items:center; gap:4px;">
+        <span style="color:#ffb300;">●</span>
+        Light (1–5h)
+      </div>
+
+      <div style="display:flex; align-items:center; gap:4px;">
+        <span style="color:#bdbdbd;">●</span>
+        No record
+      </div>
+
+    </div>
   `;
-});
-
-// split 3x3
-const row1 = dots.slice(0, 3).join("");
-const row2 = dots.slice(3, 6).join("");
-const row3 = dots.slice(6, 9).join("");
-
-// =========================
-// RENDER CARD
-// =========================
-document.getElementById("burnoutCard").innerHTML = `
-  <div class="title">Burnout Monitor</div>
-
-  <div style="display:flex; flex-direction:column; gap:10px; margin:10px 0;">
-    <div style="display:flex; gap:12px; justify-content:center;">
-      ${row1}
-    </div>
-
-    <div style="display:flex; gap:12px; justify-content:center;">
-      ${row2}
-    </div>
-
-    <div style="display:flex; gap:12px; justify-content:center;">
-      ${row3}
-    </div>
-  </div>
-
-  <div class="big" style="color:${burnoutColor}">
-    ${burnoutText}
-  </div>
-
-  <div class="sub">
-    ${insight}
-  </div>
-
-  <div style="
-  margin-top:12px;
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-  font-size:10px;
-  color:#666;
-">
-
-  <div style="display:flex; align-items:center; gap:4px;">
-    <span style="color:#f44336;">●</span>
-    Heavy (9h+)
-  </div>
-
-  <div style="display:flex; align-items:center; gap:4px;">
-    <span style="color:#4caf50;">●</span>
-    Normal (6–8h)
-  </div>
-
-  <div style="display:flex; align-items:center; gap:4px;">
-    <span style="color:#ffb300;">●</span>
-    Light (1–5h)
-  </div>
-
-  <div style="display:flex; align-items:center; gap:4px;">
-    <span style="color:#bdbdbd;">●</span>
-    No record
-  </div>
-
-</div>
-`;
 });
