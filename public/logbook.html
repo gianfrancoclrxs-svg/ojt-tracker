@@ -4,23 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OJT Tracker - Logbook</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="left-side">
-    <button onclick="location.href='homepage.html'">
-      <i class="fa-solid fa-arrow-left"></i>
-    </button>
-  </div>
-  <div class="right-side">
-    <span id="modeToggle">
-      <i class="fa-regular fa-moon"></i>
-    </span>
-  </div>
-</div>
+<div id="topBarContainer"></div>
 
 <div class="container">
   <h2>OJT Logbook</h2>
@@ -141,8 +130,9 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="app.js"></script>
-
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
 <script>
 const today = new Date();
 loadLogbook(today.getMonth() + 1, today.getFullYear());

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy</title>
+
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+  color: #222;
+}
+
+/* TOP BAR */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* 🔥 forces everything left */
+  gap: 10px;
+
+  padding: 12px 15px;
+  background: linear-gradient(90deg,#6a11cb,#2575fc);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.top-bar button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  margin: 0; /* remove hidden offsets */
+}
+
+.app-name {
+  font-weight: 700;
+  font-size: 16px;
+  text-align: left;
+}
+
+/* CONTENT */
+.container {
+  padding: 18px 15px;
+  text-align: left;
+  max-width: 900px;
+}
+
+/* TYPOGRAPHY */
+h1 {
+  font-size: 22px;
+  margin: 10px 0 4px;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 18px 0 6px;
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 6px 0;
+}
+
+/* SEPARATORS */
+hr {
+  border: none;
+  height: 1px;
+  background: #ddd;
+  margin: 14px 0;
+}
+
+/* LISTS (FIXED INDENTATION) */
+ul {
+  margin: 6px 0 10px 18px;
+  padding: 0;
+}
+
+li {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 3px;
+}
+
+/* SECTION SPACING */
+.section {
+  margin-bottom: 8px;
+}
+</style>
+
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <button onclick="history.back()">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
+  <div class="app-name">OJT Tracker</div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+  <h1>Privacy Policy</h1>
+  <p><strong>OJT Tracker</strong><br>
+  Effective Date: April 21, 2026</p>
+
+  <hr>
+
+  <h2>1. Overview</h2>
+  <p>
+    OJT Tracker is a student-developed web application designed to help users track their On-the-Job Training (OJT) progress, including attendance logs, total hours, and company information.
+  </p>
+  <p>
+    This Privacy Policy explains how user data is collected, stored, and used within the application.
+  </p>
+
+  <hr>
+
+  <h2>2. Information We Collect</h2>
+  <p>We may collect and store the following data:</p>
+
+  <p><strong>Account Information:</strong></p>
+  <ul>
+    <li>Full Name</li>
+    <li>Username</li>
+    <li>Email Address</li>
+    <li>Student ID</li>
+  </ul>
+
+  <p><strong>OJT Information:</strong></p>
+  <ul>
+    <li>Company / Location Name</li>
+    <li>Company Address</li>
+    <li>Target OJT Hours</li>
+  </ul>
+
+  <p><strong>Logbook Data:</strong></p>
+  <ul>
+    <li>Attendance logs (date, AM/PM time in/out)</li>
+    <li>Half-day and absent records</li>
+    <li>Total hours and minutes rendered</li>
+  </ul>
+
+  <p><strong>Feedback Data:</strong></p>
+  <ul>
+    <li>Rating (1–5 stars)</li>
+    <li>Written feedback</li>
+    <li>Submission date</li>
+  </ul>
+
+  <hr>
+
+  <h2>3. How We Use Your Information</h2>
+  <p>All collected data is used only for app functionality, including:</p>
+  <ul>
+    <li>User authentication and account management</li>
+    <li>Tracking OJT attendance and progress</li>
+    <li>Displaying logbook records and total hours</li>
+    <li>Storing user feedback for app improvement</li>
+  </ul>
+
+  <p>We do not use your data for advertising, profiling, or marketing purposes.</p>
+
+  <hr>
+
+  <h2>4. Data Storage & Security</h2>
+  <p>
+    Your data is securely stored using Google Firebase (Firestore), a cloud database service.
+  </p>
+  <p>
+    While standard security measures are implemented, no system is 100% secure. Users are responsible for keeping their login credentials safe.
+  </p>
+
+  <hr>
+
+  <h2>5. Data Sharing</h2>
+  <p>We do not sell, rent, or share user data with third parties.</p>
+  <p>Data is only accessible:</p>
+  <ul>
+    <li>To the user (through their account)</li>
+    <li>To the Firebase backend required to operate the application</li>
+  </ul>
+
+  <hr>
+
+  <h2>6. Account Deletion</h2>
+  <p>Users may delete their account anytime through the app settings.</p>
+  <p>When an account is deleted:</p>
+  <ul>
+    <li>All user information is permanently removed</li>
+    <li>All logbook records are deleted</li>
+    <li>Feedback associated with the user is removed (if applicable)</li>
+  </ul>
+  <p>This action cannot be undone.</p>
+
+  <hr>
+
+  <h2>7. Feedback System</h2>
+  <p>
+    Feedback submitted through the app is stored for improvement purposes and is not publicly displayed outside the system unless used for internal review.
+  </p>
+
+  <hr>
+
+  <h2>8. Cookies & Local Storage</h2>
+  <p>OJT Tracker uses local storage only for session purposes:</p>
+  <ul>
+    <li>Login session management</li>
+    <li>User session ID storage</li>
+  </ul>
+  <p>No tracking cookies or third-party analytics are used.</p>
+
+  <hr>
+
+  <h2>9. Third-Party Services</h2>
+  <p>This application uses:</p>
+  <ul>
+    <li>Google Firebase (Firestore) for authentication and database storage</li>
+  </ul>
+  <p>These services may process data according to their own privacy policies.</p>
+
+  <hr>
+
+  <h2>10. Disclaimer</h2>
+  <p>
+    OJT Tracker is a student project developed for educational purposes only and is not affiliated with any institution, company, or organization.
+  </p>
+  <p>
+    The developer is not responsible for data loss, misuse, or system errors.
+  </p>
+
+  <hr>
+
+  <h2>11. Changes to This Policy</h2>
+  <p>
+    This Privacy Policy may be updated from time to time. Changes will be reflected within the application.
+  </p>
+
+  <hr>
+
+  <h2>12. Contact</h2>
+  <p>
+    Developer: Grayson (@gianxxsz)<br>
+    Email: gianfranco.clrxs@gmail.com
+  </p>
+
+</div>
+
+</body>
+</html>

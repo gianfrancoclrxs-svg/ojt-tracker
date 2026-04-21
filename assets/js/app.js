@@ -1,3 +1,6 @@
+// ===============================
+// FIREBASE INITIALIZATION
+// ===============================
 const firebaseConfig = {
   apiKey: "SECRETT",
   authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -7,31 +10,45 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+
+// ===============================
+// UI TOGGLE (LOGIN / SIGNUP)
+// ===============================
+
+// Switch to Sign Up form
 document.getElementById("showSignUp")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signUpForm").style.display = "block";
 });
 
+// Switch back to Login form
 document.getElementById("showLogin")?.addEventListener("click", () => {
   document.getElementById("signUpForm").style.display = "none";
   document.getElementById("loginForm").style.display = "block";
 });
 
+
+// ===============================
+// SIGN UP FUNCTION
+// ===============================
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   const fullName = document.getElementById("fullName").value.trim();
   const username = document.getElementById("signUpUsername").value.trim();
   const email = document.getElementById("signUpEmail").value.trim();
   const studentId = document.getElementById("signUpStudentId").value.trim();
 
+  // Validate input fields
   if (!fullName || !username || !email || !studentId)
     return alert("Fill all fields");
 
+  // Check if username already exists
   const existing = await db.collection("users")
     .where("username", "==", username)
     .get();
 
   if (!existing.empty) return alert("Username taken");
 
+  // Create new user in Firestore
   const userRef = await db.collection("users").add({
     full_name: fullName,
     username,
@@ -42,11 +59,18 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
     target_hours: 0
   });
 
+  // Save session locally
   localStorage.setItem("userDocId", userRef.id);
   localStorage.setItem("loggedIn", "true");
-  window.location.href = "homepage.html";
+
+  // Redirect to homepage
+  window.location.href = "./homepage.html";
 });
 
+
+// ===============================
+// LOGIN FUNCTION
+// ===============================
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
   const username = document.getElementById("loginUsername").value.trim();
   const studentId = document.getElementById("loginStudentId").value.trim();
@@ -54,6 +78,7 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
   if (!username || !studentId)
     return alert("Fill all fields");
 
+  // Check user credentials
   const query = await db.collection("users")
     .where("username", "==", username)
     .where("student_id", "==", studentId)
@@ -61,17 +86,27 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
 
   if (query.empty) return alert("Invalid login");
 
+  // Save session
   localStorage.setItem("userDocId", query.docs[0].id);
   localStorage.setItem("loggedIn", "true");
-  window.location.href = "homepage.html";
+
+  window.location.href = "./homepage.html";
 });
 
+
+// ===============================
+// TIME PARSER HELPER
+// ===============================
 function safeParseTime(t) {
   if (!t) return NaN;
   const [h, m] = t.split(":").map(Number);
   return h + m / 60;
 }
 
+
+// ===============================
+// LOAD OJT LOGBOOK
+// ===============================
 async function loadLogbook(month = null, year = null) {
   const userDocId = localStorage.getItem("userDocId");
 
@@ -82,6 +117,7 @@ async function loadLogbook(month = null, year = null) {
     .get();
 
   const tbody = document.getElementById("logTableBody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   let hasRecords = false;
@@ -93,6 +129,7 @@ async function loadLogbook(month = null, year = null) {
     const recordMonth = recordDate.getMonth() + 1;
     const recordYear = recordDate.getFullYear();
 
+    // Filter by month/year if provided
     if (month && year) {
       if (recordMonth !== month || recordYear !== year) return;
     }
@@ -101,6 +138,7 @@ async function loadLogbook(month = null, year = null) {
 
     const statusRaw = (d.status || "").toString().trim().toLowerCase();
 
+    // Detect empty / absent / half day
     const isEmptyTime =
       !d.am_in && !d.am_out &&
       !d.pm_in && !d.pm_out;
@@ -108,6 +146,7 @@ async function loadLogbook(month = null, year = null) {
     const isAbsent = statusRaw === "absent" || isEmptyTime;
     const isHalf = statusRaw.includes("half") || (!isEmptyTime && (!d.am_in || !d.pm_in));
 
+    // Compute AM / PM hours
     const am = (d.am_in && d.am_out)
       ? safeParseTime(d.am_out) - safeParseTime(d.am_in)
       : 0;
@@ -122,12 +161,14 @@ async function loadLogbook(month = null, year = null) {
 
     const row = document.createElement("tr");
 
+    // Row styling
     if (isAbsent) {
       row.classList.add("absent-row");
     } else if (isHalf) {
       row.classList.add("halfday-row");
     }
 
+    // Fill table row
     row.innerHTML = `
       <td>${d.date}</td>
       <td>${d.am_in || "-"}</td>
@@ -143,6 +184,7 @@ async function loadLogbook(month = null, year = null) {
     tbody.appendChild(row);
   });
 
+  // If no records found
   if (!hasRecords) {
     tbody.innerHTML = `
       <tr>
@@ -154,6 +196,10 @@ async function loadLogbook(month = null, year = null) {
   }
 }
 
+
+// ===============================
+// DELETE LOG ENTRY
+// ===============================
 async function deleteLog(logId) {
   const confirmDelete = confirm("Delete this log entry?");
   if (!confirmDelete) return;
@@ -169,11 +215,16 @@ async function deleteLog(logId) {
   alert("Log deleted!");
 }
 
+
+// ===============================
+// MARK ABSENT
+// ===============================
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
   const logDateInput = document.getElementById("logDate");
 
   let date = logDateInput.value;
 
+  // default to today
   if (!date) {
     const today = new Date();
     date = today.toISOString().split("T")[0];
@@ -197,6 +248,10 @@ document.getElementById("absentBtn")?.addEventListener("click", async () => {
   alert("Marked Absent!");
 });
 
+
+// ===============================
+// SAVE FULL DAY LOG
+// ===============================
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   const date = document.getElementById("logDate").value;
   const am_in = document.getElementById("amIn").value;
@@ -221,10 +276,15 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
     });
 
   alert("Saved!");
+
   const today = new Date();
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
 
+
+// ===============================
+// HALF DAY LOGIC
+// ===============================
 async function saveHalfDay(type) {
   const date = document.getElementById("logDate").value;
   if (!date) return alert("Please select a date");
@@ -269,16 +329,25 @@ async function saveHalfDay(type) {
   loadLogbook();
 }
 
+
+// ===============================
+// HALF DAY UI EVENTS
+// ===============================
 document.getElementById("halfDayBtn")?.addEventListener("click", () => {
   document.getElementById("halfDayPopup").style.display = "flex";
 });
 
 document.getElementById("amHalfBtn")?.addEventListener("click", () => saveHalfDay("AM"));
 document.getElementById("pmHalfBtn")?.addEventListener("click", () => saveHalfDay("PM"));
+
 document.getElementById("closeHalfPopup")?.addEventListener("click", () => {
   document.getElementById("halfDayPopup").style.display = "none";
 });
 
+
+// ===============================
+// PAGE LOAD INIT
+// ===============================
 window.addEventListener("load", () => {
   const today = new Date();
 
@@ -290,6 +359,10 @@ window.addEventListener("load", () => {
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
 
+
+// ===============================
+// GREETING + DASHBOARD INFO
+// ===============================
 async function updateGreetingCard() {
   const userDocId = localStorage.getItem("userDocId");
   if (!userDocId) return;
@@ -299,7 +372,7 @@ async function updateGreetingCard() {
 
   const data = doc.data();
 
-  const name = data.full_name || "User";
+  const name = data.username || "User";
   document.getElementById("greeting").textContent = `Hello, ${name}!`;
 
   document.getElementById("companyName").textContent =
@@ -336,6 +409,10 @@ async function updateGreetingCard() {
     `${remaining.toFixed(2)}h Remaining`;
 }
 
+
+// ===============================
+// TOTAL HOURS CALCULATION
+// ===============================
 async function getTotalRecordedHours(userDocId) {
   const snapshot = await db.collection("users")
     .doc(userDocId)

@@ -4,24 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OJT Tracker - Homepage</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="left-side">
-    <button id="settingsBtn" onclick="location.href='settings.html'">
-      <i class="fa-solid fa-gear"></i>
-    </button>
-  </div>
-  
-  <div class="right-side">
-    <span id="modeToggle">
-      <i class="fa-regular fa-moon"></i>
-    </span>
-  </div>
-</div>
+<div id="topBarContainer"></div>
 
 <div class="container">
 
@@ -43,15 +31,45 @@
 
   <div class="buttons">
     <button onclick="location.href='logbook.html'">Logbook</button>
-    <button onclick="location.href='totaltime.html'">Total Time</button>
+  </div>
+
+<!-- OJT Progress Card -->
+<div class="ojt-progress-card">
+
+  <!-- LEFT: Ring -->
+  <div class="ring-wrapper">
+    <svg class="progress-ring" width="120" height="120">
+      <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+      <circle class="ring-fill" cx="60" cy="60" r="50"></circle>
+    </svg>
+
+    <div class="ring-percent" id="ringPercent">0%</div>
+  </div>
+
+  <!-- RIGHT: Info -->
+  <div class="ring-info">
+    <p class="hours" id="hoursText">0 / 0 hrs</p>
+    <p class="days" id="daysText">0 days recorded</p>
+    <p class="milestone" id="milestoneText">Starting out</p>
   </div>
 
 </div>
 
+<div id="weeklyChart"></div>
+
+<div class="dashboard-row">
+  <div id="statusCard"></div>
+  <div id="burnoutCard"></div>
+</div>
+
+</div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="app.js"></script>
-<script src="whatsnew.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/whatsnew.js"></script>
+<script src="/assets/js/components/ring.js"></script>
+<script src="/assets/js/components/weeklychart.js"></script>
+<script src="/assets/js/components/dashboard-cards.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
 
@@ -80,5 +98,7 @@
     
   });
 </script>
+<script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
 </body>
 </html>

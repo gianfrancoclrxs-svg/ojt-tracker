@@ -2,7 +2,7 @@ if (typeof db === "undefined") {
   console.error("Firestore db is not available in whatsnew.js");
 }
 
-const CURRENT_WHATSNEW_VERSION = "1.4.4"; 
+const CURRENT_WHATSNEW_VERSION = "2.0.0"; 
 
 function createWhatsNewModal(onClose) {
   const overlay = document.createElement("div");
@@ -14,13 +14,16 @@ function createWhatsNewModal(onClose) {
 
       <div style="text-align:left; font-size:14px; margin:10px 0;">
         <ul>
-            <li>Added half-day record system for tracking half-day attendance</li>
-            <li>Added filtering by month and year in the logbook</li>
-            <li>Added minutes display in total time records</li>
-            <li>Added new ratings and feedback system</li>
-            <li>Improved logbook UI with color indicators for attendance status</li>
-            <li>Improved overall user interface and design</li>
-            <li>Fixed bugs and improved system stability</li>
+            <li>Introduced Ring Features for better visual feedback</li>
+            <li>Added Weekly Activity tracking system</li>
+            <li>Implemented Progress Status monitoring</li>
+            <li>Added Burnout Monitor to track user fatigue levels</li>
+            <li>Removed Total Time button for a cleaner interface</li>
+            <li>Added Terms & Conditions page</li>
+            <li>Added Privacy Policy page</li>
+            <li>Added a responsive footer section</li>
+            <li>Upgraded UI design (major improvements in Login & Signup screens)</li>
+            <li>Fixed bugs and improved overall app stability</li>
         </ul>
       </div>
 
