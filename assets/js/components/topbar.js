@@ -7,6 +7,21 @@ style.textContent = `
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
         padding: 10px 15px;
+
+        /* LIGHT MODE (premium soft white) */
+        background: linear-gradient(135deg, #ffffff, #f3f5f7);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+
+        color: #111;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    /* DARK MODE OVERRIDE */
+    body.dark-mode .top-bar {
+        background: linear-gradient(135deg, #1a1a1a, #111111);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+        color: #ffffff;
     }
 
     .left-side {
@@ -29,11 +44,21 @@ style.textContent = `
         border: none;
         cursor: pointer;
         font-size: 18px;
+        color: inherit;
+        transition: 0.2s;
     }
 
     #modeToggle {
         cursor: pointer;
         font-size: 18px;
+        color: inherit;
+    }
+
+    /* icon hover polish */
+    #settingsBtn:hover,
+    #backBtn:hover,
+    #modeToggle:hover {
+        transform: scale(1.1);
     }
 `;
 

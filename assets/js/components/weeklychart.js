@@ -123,6 +123,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   card.appendChild(title);
 
+  function applyTheme() {
+  const t = getTheme();
+
+  card.style.background = t.cardBg;
+  card.style.color = t.text;
+  title.style.color = t.text;
+  axis.style.color = t.muted;
+
+  bars.querySelectorAll("span").forEach(el => {
+    el.style.color = t.muted;
+  });
+}
+
   // ================= WRAPPER =================
   const wrapper = document.createElement("div");
   wrapper.style.display = "flex";
@@ -264,12 +277,20 @@ document.addEventListener("click", () => {
 wrapper.appendChild(axis);
 wrapper.appendChild(bars);
 card.appendChild(wrapper);
-
+applyTheme();
 mount.parentNode.insertBefore(card, mount);
 
 // entrance animation
 requestAnimationFrame(() => {
   card.style.opacity = "1";
   card.style.transform = "translateY(0)";
+});
+const observer = new MutationObserver(() => {
+  applyTheme();
+});
+
+observer.observe(document.body, {
+  attributes: true,
+  attributeFilter: ["class"]
 });
 });

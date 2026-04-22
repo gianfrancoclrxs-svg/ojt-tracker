@@ -142,11 +142,19 @@ document.getElementById("filterYear").value = today.getFullYear();
 
 loadLogbook(today.getMonth() + 1, today.getFullYear());
 
-document.getElementById("modeToggle").addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  const icon = document.querySelector("#modeToggle i");
-  icon.classList.toggle("fa-moon");
-  icon.classList.toggle("fa-sun");
+document.addEventListener("DOMContentLoaded", () => {
+  const modeToggle = document.getElementById("modeToggle");
+
+  if (modeToggle) {
+    modeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const icon = document.querySelector("#modeToggle i");
+      if (icon) {
+        icon.classList.toggle("fa-moon");
+        icon.classList.toggle("fa-sun");
+      }
+    });
+  }
 });
 
 if (localStorage.getItem("loggedIn") !== "true" || !localStorage.getItem("userDocId")) {
@@ -179,17 +187,16 @@ document.getElementById("generateDtrBtn").addEventListener("click", () => {
 
   document.getElementById("dtrPopup").style.display = "none";
 
-  const win = window.open(`dtr.html?month=${month}&year=${year}`, "_blank");
+  const url = `dtr.html?month=${month}&year=${year}`;
 
-  const timer = setInterval(() => {
-    if (win.document.readyState === "complete") {
-      clearInterval(timer);
-      setTimeout(() => {
-        win.focus();
-        win.print();
-      }, 1200);
-    }
-  }, 500);
+  const win = window.open(url, "_blank");
+
+  if (!win) {
+    alert("Popup blocked. Please allow popups for this site.");
+    return;
+  }
+
+  // safer approach: let dtr.html handle printing itself
 });
 
 </script>

@@ -6,10 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 style.textContent = `
   .app-footer {
-    margin-top: 40px;
-    padding: 20px;
+    margin-top: 20px; /* reduced */
+    padding: 12px 15px; /* tighter */
 
     font-size: 12px;
+    line-height: 1.4;
 
     max-width: 480px;
     margin-left: auto;
@@ -17,12 +18,15 @@ style.textContent = `
 
     text-align: center;
 
-    /* LIGHT MODE DEFAULT */
     background: #f9f9f9;
     color: #777;
     border-top: 1px solid #ddd;
 
     transition: all 0.3s ease;
+  }
+
+  .app-footer p {
+    margin: 2px 0; 
   }
 
   .app-footer a {
@@ -35,7 +39,6 @@ style.textContent = `
     text-decoration: underline;
   }
 
-  /* ================= DARK MODE ================= */
   body.dark-mode .app-footer {
     background: #1e1e1e;
     color: #bbb;

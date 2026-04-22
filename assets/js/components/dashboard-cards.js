@@ -34,7 +34,7 @@ style.textContent = `
     border-radius: 14px;
     background: var(--card-bg);
     color: var(--text-color, #111);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.20);
   }
 
   .title {

@@ -40,6 +40,7 @@
   color: #fbbc05;
 }
 
+/* ================= TEXTAREA ================= */
 textarea {
   width: 100%;
   min-height: 100px;
@@ -50,27 +51,38 @@ textarea {
   font-size: 14px;
   transition: 0.2s ease;
   box-sizing: border-box;
+  background: #fff;
+  color: #222;
 }
 
 textarea:focus {
   border-color: #2575fc;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37,117,252,0.15);
+  box-shadow: 0 0 0 3px rgba(37,117,252,0.20);
 }
 
+/* ================= CARD ================= */
 .card {
   padding: 20px;
   box-sizing: border-box;
 }
 
+/* inputs inside card */
 .card input,
 .card select,
 .card textarea {
   width: 100%;
   margin-bottom: 10px;
   box-sizing: border-box;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  background: #fff;
+  color: #222;
 }
 
+/* ================= TEXT ================= */
 .card h3 {
   margin-bottom: 10px;
 }
@@ -87,6 +99,12 @@ textarea:focus {
   margin: 10px 0 0;
 }
 
+.card p {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+/* ================= BUTTON ================= */
 #submitFeedbackBtn {
   background-color: #4caf50;
   color: white;
@@ -94,6 +112,8 @@ textarea:focus {
   border-radius: 10px;
   padding: 12px;
   transition: 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
 #submitFeedbackBtn:hover {
@@ -101,18 +121,34 @@ textarea:focus {
   opacity: 0.95;
 }
 
-.card p {
-  font-size: 14px;
-  margin: 6px 0;
-}
-
+/* ================= HR ================= */
 hr {
   border: none;
   height: 1px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.1);
   margin: 12px 0;
 }
 
+/* ================= DARK MODE SUPPORT ================= */
+body.dark-mode textarea,
+body.dark-mode .card input,
+body.dark-mode .card select,
+body.dark-mode .card textarea {
+  background: #1e1e1e;
+  color: #eaeaea;
+  border: 1px solid #333;
+}
+
+body.dark-mode textarea::placeholder,
+body.dark-mode input::placeholder {
+  color: #888;
+}
+
+body.dark-mode hr {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ================= MOBILE ================= */
 @media (max-width: 480px) {
   .star-rating label {
     font-size: 28px;
@@ -127,13 +163,7 @@ hr {
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="left-side">
-    <button onclick="location.href='homepage.html'">
-      <i class="fa-solid fa-arrow-left"></i>
-    </button>
-  </div>
-</div>
+<div id="topBarContainer"></div>
 
 <div class="container">
 
@@ -147,19 +177,19 @@ hr {
     <button id="saveOjtSettingsBtn">Save Changes</button>
   </div>
 
-  <div class="card">
-    <h3>App Info</h3>
+<div class="card">
+  <h3>App Info</h3>
 
-    <p><strong>Version:</strong> <span id="appVersion"></span></p>
+  <p><strong>Version:</strong> <span id="appVersion"></span></p>
 
-    <hr>
+  <hr>
 
-    <h4>What’s New</h4>
+  <h4>What’s New</h4>
 
-    <ul id="whatsNewList" style="text-align:left; font-size:14px; padding-left:18px;">
-      <!-- auto-filled by JS -->
-    </ul>
-  </div>
+  <ul id="whatsNewList" style="text-align:left; font-size:14px; padding-left:18px;">
+    <!-- auto-filled by JS -->
+  </ul>
+</div>
 
   <div class="card">
 
@@ -207,95 +237,163 @@ hr {
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
 
 <script>
-function logout() {
-  localStorage.removeItem("loggedIn");
-  localStorage.removeItem("userDocId");
-  alert("Logged out!");
-  location.href = "index.html";
-}
+window.addEventListener("DOMContentLoaded", () => {
 
-async function deleteAccount() {
-  const confirmDelete = confirm("Are you sure? This cannot be undone.");
-  if (!confirmDelete) return;
+  // ========================
+  // VERSION + WHAT'S NEW
+  // ========================
+  const versionEl = document.getElementById("appVersion");
+  const list = document.getElementById("whatsNewList");
 
-  const userDocId = localStorage.getItem("userDocId");
+  if (versionEl) {
+    versionEl.textContent = window.APP_CONFIG?.version || "N/A";
+  }
 
-  const logs = await db.collection("users")
-    .doc(userDocId)
-    .collection("ojt_records")
-    .get();
+  if (list && window.APP_CONFIG?.whatsNew) {
+    window.APP_CONFIG.whatsNew.forEach(item => {
+      const li = document.createElement("li");
 
-  const batch = db.batch();
-  logs.forEach(doc => batch.delete(doc.ref));
-  await batch.commit();
+      // OLD FORMAT SUPPORT (string)
+      if (typeof item === "string") {
+        li.textContent = item;
+      } 
+      // NEW FORMAT (object)
+      else {
+        li.textContent = item.title;
 
-  await db.collection("users").doc(userDocId).delete();
+        if (item.details && item.details.length) {
+          const subUl = document.createElement("ul");
+          subUl.style.paddingLeft = "18px";
+          subUl.style.fontSize = "13px";
+          subUl.style.color = "#fff";
+          subUl.style.marginTop = "5px";
 
-  localStorage.clear();
-  alert("Account deleted!");
-  location.href = "index.html";
-}
+          item.details.forEach(detail => {
+            const subLi = document.createElement("li");
+            subLi.textContent = detail;
+            subUl.appendChild(subLi);
+          });
 
-async function loadOjtInfo() {
-  const userDocId = localStorage.getItem("userDocId");
-  const doc = await db.collection("users").doc(userDocId).get();
-  const data = doc.data();
+          li.appendChild(subUl);
+        }
+      }
 
-  document.getElementById("editLocation").value = data.ojt_location || "";
-  document.getElementById("editAddress").value = data.ojt_address || "";
-  document.getElementById("editTargetHours").value = data.target_hours || "";
-}
-loadOjtInfo();
+      list.appendChild(li);
+    });
+  }
 
-document.getElementById("saveOjtSettingsBtn").addEventListener("click", async () => {
-  const userDocId = localStorage.getItem("userDocId");
+  // ========================
+  // LOGOUT
+  // ========================
+  window.logout = function () {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("userDocId");
+    alert("Logged out!");
+    location.href = "index.html";
+  };
 
-  await db.collection("users").doc(userDocId).update({
-    ojt_location: document.getElementById("editLocation").value,
-    ojt_address: document.getElementById("editAddress").value,
-    target_hours: parseFloat(document.getElementById("editTargetHours").value)
-  });
+  // ========================
+  // DELETE ACCOUNT
+  // ========================
+  window.deleteAccount = async function () {
+    const confirmDelete = confirm("Are you sure? This cannot be undone.");
+    if (!confirmDelete) return;
 
-  alert("Updated!");
-});
+    const userDocId = localStorage.getItem("userDocId");
+    if (!userDocId) return alert("No user found.");
 
-document.getElementById("submitFeedbackBtn").addEventListener("click", async () => {
-  const userDocId = localStorage.getItem("userDocId");
-  const feedback = document.getElementById("feedbackText").value;
+    const logs = await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .get();
 
-  const rating = document.querySelector('input[name="rating"]:checked');
+    const batch = db.batch();
+    logs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
 
-  if (!feedback) return alert("Write feedback first");
-  if (!rating) return alert("Select rating");
+    await db.collection("users").doc(userDocId).delete();
 
-  const userDoc = await db.collection("users").doc(userDocId).get();
-  const userData = userDoc.data();
+    localStorage.clear();
+    alert("Account deleted!");
+    location.href = "index.html";
+  };
 
-  const fullName = userData.full_name || "Anonymous";
+  // ========================
+  // LOAD OJT INFO
+  // ========================
+  async function loadOjtInfo() {
+    const userDocId = localStorage.getItem("userDocId");
+    if (!userDocId) return;
 
-  await db.collection("feedback").add({
-    userId: userDocId,
-    fullName: fullName,   
-    feedback: feedback,
-    rating: rating.value,
-    date: new Date().toISOString()
-  });
+    const doc = await db.collection("users").doc(userDocId).get();
+    if (!doc.exists) return;
 
-  alert("Thanks for your feedback!");
-  document.getElementById("feedbackText").value = "";
-});
+    const data = doc.data();
 
-document.getElementById("appVersion").textContent =
-  window.APP_CONFIG.version;
+    const loc = document.getElementById("editLocation");
+    const addr = document.getElementById("editAddress");
+    const hours = document.getElementById("editTargetHours");
 
-const list = document.getElementById("whatsNewList");
+    if (loc) loc.value = data.ojt_location || "";
+    if (addr) addr.value = data.ojt_address || "";
+    if (hours) hours.value = data.target_hours || "";
+  }
 
-window.APP_CONFIG.whatsNew.forEach(item => {
-  const li = document.createElement("li");
-  li.textContent = item;
-  list.appendChild(li);
+  loadOjtInfo();
+
+  // ========================
+  // SAVE SETTINGS
+  // ========================
+  const saveBtn = document.getElementById("saveOjtSettingsBtn");
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      const userDocId = localStorage.getItem("userDocId");
+      if (!userDocId) return;
+
+      await db.collection("users").doc(userDocId).update({
+        ojt_location: document.getElementById("editLocation")?.value || "",
+        ojt_address: document.getElementById("editAddress")?.value || "",
+        target_hours: parseFloat(document.getElementById("editTargetHours")?.value || 0)
+      });
+
+      alert("Updated!");
+    });
+  }
+
+  // ========================
+  // FEEDBACK
+  // ========================
+  const feedbackBtn = document.getElementById("submitFeedbackBtn");
+
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener("click", async () => {
+      const userDocId = localStorage.getItem("userDocId");
+      const feedback = document.getElementById("feedbackText")?.value;
+      const rating = document.querySelector('input[name="rating"]:checked');
+
+      if (!feedback) return alert("Write feedback first");
+      if (!rating) return alert("Select rating");
+
+      const userDoc = await db.collection("users").doc(userDocId).get();
+      const userData = userDoc.data();
+
+      await db.collection("feedback").add({
+        userId: userDocId,
+        fullName: userData?.full_name || "Anonymous",
+        feedback: feedback,
+        rating: rating.value,
+        date: new Date().toISOString()
+      });
+
+      alert("Thanks for your feedback!");
+      document.getElementById("feedbackText").value = "";
+    });
+  }
+
 });
 </script>
 

@@ -23,7 +23,16 @@ function createWhatsNewModal(onClose) {
 
       <div style="text-align:left; font-size:14px; margin:10px 0;">
         <ul>
-          ${window.APP_CONFIG.whatsNew.map(item => `<li>${item}</li>`).join("")}
+          ${window.APP_CONFIG.whatsNew.map(item => `
+            <li>
+              ${item.title}
+              ${item.details ? `
+                <ul style="margin-top:5px; padding-left:18px; font-size:13px; color:#aaa;">
+                  ${item.details.map(d => `<li>${d}</li>`).join("")}
+                </ul>
+              ` : ""}
+            </li>
+          `).join("")}
         </ul>
       </div>
 
