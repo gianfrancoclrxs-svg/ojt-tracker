@@ -155,17 +155,9 @@ hr {
     <hr>
 
     <h4>What’s New</h4>
-    <ul style="text-align:left; font-size:14px; padding-left:18px;">
-      <li>Introduced Ring Features for better visual feedback</li>
-      <li>Added Weekly Activity tracking system</li>
-      <li>Implemented Progress Status monitoring</li>
-      <li>Added Burnout Monitor to track user fatigue levels</li>
-      <li>Removed Total Time button for a cleaner interface</li>
-      <li>Added Terms & Conditions page</li>
-      <li>Added Privacy Policy page</li>
-      <li>Added a responsive footer section</li>
-      <li>Upgraded UI design (major improvements in Login & Signup screens)</li>
-      <li>Fixed bugs and improved overall app stability</li>
+
+    <ul id="whatsNewList" style="text-align:left; font-size:14px; padding-left:18px;">
+      <!-- auto-filled by JS -->
     </ul>
   </div>
 
@@ -295,7 +287,16 @@ document.getElementById("submitFeedbackBtn").addEventListener("click", async () 
   document.getElementById("feedbackText").value = "";
 });
 
-document.getElementById("appVersion").textContent = window.APP_VERSION;
+document.getElementById("appVersion").textContent =
+  window.APP_CONFIG.version;
+
+const list = document.getElementById("whatsNewList");
+
+window.APP_CONFIG.whatsNew.forEach(item => {
+  const li = document.createElement("li");
+  li.textContent = item;
+  list.appendChild(li);
+});
 </script>
 
 </body>

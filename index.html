@@ -9,8 +9,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
-  /* ================= AUTH ================= */
-
 .form-link {
   font-weight: bold;
   cursor: pointer;
@@ -27,30 +25,27 @@
   box-sizing: border-box;
 }
 
-/* ================= INFO CARDS ================= */
-
 .auth-info-cards {
   margin-top: 20px;
   display: grid;
   gap: 12px;
-  justify-items: center; /* ✅ TRUE CENTER FIX */
+  justify-items: center; 
 }
 
-/* CARD */
 .info-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   padding: 16px;
   border-radius: 14px;
   color: #111827;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.20);
 
   width: 100%;
   max-width: 340px;
 
   display: flex;
   flex-direction: column;
-  align-items: center;   /* ✅ CENTER CONTENT */
+  align-items: center;  
   text-align: center;
 
   gap: 10px;
@@ -58,13 +53,11 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* hover */
 .info-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }
 
-/* ICON */
 .info-icon {
   width: 42px;
   height: 42px;
@@ -76,7 +69,6 @@
   color: white;
 }
 
-/* TEXT */
 .info-text h3 {
   margin: 0;
   font-size: 14px;
@@ -90,26 +82,20 @@
   line-height: 1.5;
 }
 
-/* ================= BASE ================= */
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
 }
 
-/* ONBOARDING MODE */
 body.onboarding-mode {
   background: #050814;
   color: white;
 }
 
-/* AUTH MODE */
 body.auth-mode {
   background: #ffffff;
   color: #111827;
 }
-
-/* ================= ONBOARDING ================= */
 
 .onboarding {
   height: 100vh;
@@ -133,7 +119,6 @@ body.auth-mode {
   z-index: 9999;
 }
 
-/* SLIDES */
 .slides {
   flex: 1;
   display: flex;
@@ -164,7 +149,6 @@ body.auth-mode {
   opacity: 0;
 }
 
-/* CONTROLS */
 .controls {
   padding-bottom: 30px;
 }
@@ -177,8 +161,6 @@ button {
   border-radius: 8px;
   cursor: pointer;
 }
-
-/* ================= BACKGROUND ================= */
 
 .bg-anim {
   position: fixed;
@@ -204,7 +186,6 @@ body.onboarding-mode .bg-anim {
   opacity: 0.7;
 }
 
-/* SHAPES */
 .bg-anim span:nth-child(1) { width: 120px; height: 3px; top: 10%; left: 5%; transform: rotate(25deg); }
 .bg-anim span:nth-child(2) { width: 35px; height: 35px; top: 20%; left: 80%; border-radius: 50%; }
 .bg-anim span:nth-child(3) { width: 90px; height: 90px; top: 70%; left: 30%; transform: rotate(40deg); }
@@ -221,18 +202,40 @@ body.onboarding-mode .bg-anim {
   50% { opacity: 0.8; }
   100% { transform: translate(-40px,-80px) rotate(360deg); opacity: 0; }
 }
+
+.onboarding,
+#authContainer {
+  transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
+}
+
+body.switching-to-auth .onboarding {
+  opacity: 0;
+  transform: scale(0.96) translateY(-10px);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+#authContainer {
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  filter: blur(6px);
+}
+
+body.auth-mode #authContainer {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
 </style>
 </head>
 
 <body class="onboarding-mode">
 
-<!-- BACKGROUND -->
 <div class="bg-anim" id="bgAnim">
   <span></span><span></span><span></span><span></span><span></span>
   <span></span><span></span><span></span><span></span><span></span>
 </div>
 
-<!-- ONBOARDING -->
 <div class="onboarding" id="onboarding">
 
   <div class="skip" id="skipBtn">Skip</div>
@@ -290,7 +293,6 @@ body.onboarding-mode .bg-anim {
 
 </div>
 
-<!-- AUTH -->
 <div class="container" id="authContainer" style="display:none;">
 
   <div id="loginForm" class="card">
@@ -315,7 +317,6 @@ body.onboarding-mode .bg-anim {
     <p>Already have account? <span id="showLogin" class="form-link">Login</span></p>
   </div>
 
-  <!-- 🔥 NEW INFO CARDS -->
   <div class="auth-info-cards">
 
     <div class="info-card">
@@ -358,20 +359,16 @@ body.onboarding-mode .bg-anim {
 
 </div>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/components/footer.js"></script>
 
-<!-- ONBOARDING JS -->
 <script>
 let currentSlide = 0;
 const slides = document.querySelectorAll(".slide");
 const nextBtn = document.getElementById("nextBtn");
 const startBtn = document.getElementById("startBtn");
-
-/* ================= SLIDES ================= */
 
 function updateSlides(nextIndex) {
   if (nextIndex >= slides.length) return;
@@ -396,43 +393,39 @@ function updateSlides(nextIndex) {
   }
 }
 
-/* NEXT */
 nextBtn?.addEventListener("click", () => {
   updateSlides(currentSlide + 1);
 });
 
-/* ================= GO TO AUTH ================= */
-
 function showAuth() {
-  document.getElementById("onboarding").style.display = "none";
-  document.getElementById("authContainer").style.display = "block";
+  document.body.classList.add("switching-to-auth");
 
-  document.body.classList.remove("onboarding-mode");
-  document.body.classList.add("auth-mode");
+  setTimeout(() => {
+    document.getElementById("onboarding").style.display = "none";
+    document.getElementById("authContainer").style.display = "block";
 
-  document.querySelectorAll(".app-footer").forEach(f => {
-    f.style.display = "block";
-  });
+    document.body.classList.remove("onboarding-mode");
+    document.body.classList.remove("switching-to-auth");
+    document.body.classList.add("auth-mode");
+
+    document.querySelectorAll(".app-footer").forEach(f => {
+      f.style.display = "block";
+    });
+  }, 500); 
 }
 
 window.goToAuth = showAuth;
 
-/* ================= INIT ================= */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // hide footer during onboarding
   document.querySelectorAll(".app-footer").forEach(f => {
     f.style.display = "none";
   });
 
-  // reset slides safely
   slides.forEach(s => s.classList.remove("active", "exit-left"));
   if (slides.length > 0) slides[0].classList.add("active");
 
   currentSlide = 0;
-
-  /* ================= SKIP FIX (REAL FIX) ================= */
 
   const skipBtn = document.getElementById("skipBtn");
 

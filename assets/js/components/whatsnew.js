@@ -8,7 +8,7 @@ if (typeof db === "undefined") {
 // ================= VERSION CONTROL =================
 // IMPORTANT:
 // update this manually every time you release a new feature batch
-const CURRENT_WHATSNEW_VERSION = window.APP_VERSION;
+const CURRENT_WHATSNEW_VERSION = window.APP_CONFIG.version;
 
 // ================= WHAT'S NEW MODAL =================
 // reusable popup that shows app updates
@@ -23,16 +23,7 @@ function createWhatsNewModal(onClose) {
 
       <div style="text-align:left; font-size:14px; margin:10px 0;">
         <ul>
-            <li>Introduced Ring Features for better visual feedback</li>
-            <li>Added Weekly Activity tracking system</li>
-            <li>Implemented Progress Status monitoring</li>
-            <li>Added Burnout Monitor to track user fatigue levels</li>
-            <li>Removed Total Time button for a cleaner interface</li>
-            <li>Added Terms & Conditions page</li>
-            <li>Added Privacy Policy page</li>
-            <li>Added a responsive footer section</li>
-            <li>Upgraded UI design (major improvements in Login & Signup screens)</li>
-            <li>Fixed bugs and improved overall app stability</li>
+          ${window.APP_CONFIG.whatsNew.map(item => `<li>${item}</li>`).join("")}
         </ul>
       </div>
 

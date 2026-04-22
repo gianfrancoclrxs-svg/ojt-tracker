@@ -185,62 +185,91 @@ document.addEventListener("DOMContentLoaded", async () => {
     bar.style.transition = "height 0.7s ease";
     bar.style.cursor = "pointer";
 
-    // ================= TOOLTIP EVENTS =================
-    bar.addEventListener("mouseenter", (e) => {
-      tooltip.style.opacity = "1";
-      tooltip.style.background = t.tooltipBg;
-      tooltip.style.color = t.text;
+// ================= TOOLTIP EVENTS (MOBILE ONLY) =================
+bar.addEventListener("click", (e) => {
+  e.stopPropagation();
 
-      if (!logs.length) {
-        tooltip.innerHTML = `<b>${label}</b><br>No record`;
-      } else {
-        const d = logs[0];
+  tooltip.style.opacity = "1";
 
-        tooltip.innerHTML = `
-          <b>${label}</b><br>
-          AM: ${d.am_in} → ${d.am_out}<br>
-          PM: ${d.pm_in} → ${d.pm_out}<br>
-          <b>Total: ${value.toFixed(2)} hrs</b>
-        `;
-      }
+  // 🎨 Always readable colors
+  tooltip.style.background = isDarkMode()
+    ? "rgba(40,40,40,0.95)"
+    : "rgba(0,0,0,0.85)";
+  tooltip.style.color = "#fff";
 
-      tooltip.style.left = e.clientX + 12 + "px";
-      tooltip.style.top = e.clientY + 12 + "px";
-    });
+  if (!logs.length) {
+    tooltip.innerHTML = `<b>${label}</b><br>No record`;
+  } else {
+    const d = logs[0];
 
-    bar.addEventListener("mousemove", (e) => {
-      tooltip.style.left = e.clientX + 12 + "px";
-      tooltip.style.top = e.clientY + 12 + "px";
-    });
+    tooltip.innerHTML = `
+      <b>${label}</b><br>
+      AM: ${d.am_in} → ${d.am_out}<br>
+      PM: ${d.pm_in} → ${d.pm_out}<br>
+      <b>Total: ${value.toFixed(2)} hrs</b>
+    `;
+  }
 
-    bar.addEventListener("mouseleave", () => {
-      tooltip.style.opacity = "0";
-    });
+  // 📍 Position exactly where user taps
+  const x = e.clientX;
+  const y = e.clientY;
 
-    const text = document.createElement("span");
-    text.textContent = label;
-    text.style.fontSize = "12px";
-    text.style.marginTop = "6px";
-    text.style.color = t.muted;
+  tooltip.style.left = x + "px";
+  tooltip.style.top = (y - 10) + "px";
+  tooltip.style.transform = "translate(-50%, -100%)";
 
-    col.appendChild(bar);
-    col.appendChild(text);
-    bars.appendChild(col);
-
-    setTimeout(() => {
-      bar.style.height = value > 0 ? height + "px" : "6px";
-    }, 300 + i * 80);
-  });
-
-  wrapper.appendChild(axis);
-  wrapper.appendChild(bars);
-  card.appendChild(wrapper);
-
-  mount.parentNode.insertBefore(card, mount);
-
+  // 🧠 Keep tooltip inside screen
   requestAnimationFrame(() => {
-    card.style.opacity = "1";
-    card.style.transform = "translateY(0)";
-  });
+    const rect = tooltip.getBoundingClientRect();
 
+    if (rect.left < 8) {
+      tooltip.style.left = "8px";
+      tooltip.style.transform = "translate(0, -100%)";
+    }
+
+    if (rect.right > window.innerWidth - 8) {
+      tooltip.style.left = (window.innerWidth - rect.width - 8) + "px";
+      tooltip.style.transform = "translate(0, -100%)";
+    }
+
+    if (rect.top < 8) {
+      tooltip.style.top = (y + 14) + "px";
+      tooltip.style.transform = "translate(-50%, 0)";
+    }
+  });
+});
+
+const text = document.createElement("span");
+text.textContent = label;
+text.style.fontSize = "12px";
+text.style.marginTop = "6px";
+text.style.color = t.muted;
+
+col.appendChild(bar);
+col.appendChild(text);
+bars.appendChild(col);
+
+// Animate bar
+setTimeout(() => {
+  bar.style.height = value > 0 ? height + "px" : "6px";
+}, 300 + i * 80);
+});
+
+// ================= CLOSE TOOLTIP ON OUTSIDE CLICK =================
+document.addEventListener("click", () => {
+  tooltip.style.opacity = "0";
+});
+
+// ================= FINAL RENDER =================
+wrapper.appendChild(axis);
+wrapper.appendChild(bars);
+card.appendChild(wrapper);
+
+mount.parentNode.insertBefore(card, mount);
+
+// entrance animation
+requestAnimationFrame(() => {
+  card.style.opacity = "1";
+  card.style.transform = "translateY(0)";
+});
 });
