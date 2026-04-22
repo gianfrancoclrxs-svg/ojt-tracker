@@ -106,15 +106,16 @@ button:hover {
   margin-bottom: 5px;
 }
 table {
-  width: 100%;
+  width: fit-content;
   border-collapse: collapse;
   margin-top: 15px;
+  text-align: center;
 }
 th, td {
   padding: 8px;
   border: 1px solid #ccc;
   text-align: center;
-  font-size: 0.95em;
+  font-size: 0.85em;
 }
 .popup-overlay {
   position: fixed;

@@ -12,59 +12,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   // injecting dashboard styles directly via JS (no external CSS needed for this section)
   const style = document.createElement("style");
 
-  style.textContent = `
-    .dashboard-row,
-    #weeklyChart {
-      width: 100%;
-      max-width: 480px;
-      margin: 16px auto;
-      box-sizing: border-box;
-    }
+style.textContent = `
+  .dashboard-row,
+  #weeklyChart {
+    width: 100%;
+    max-width: 480px;
+    margin: 16px auto;
+    box-sizing: border-box;
+  }
 
+  .dashboard-row {
+    display: flex;
+    gap: 12px;
+    padding: 0;
+  }
+
+  #statusCard, #burnoutCard {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--card-bg);
+    color: var(--text-color, #111);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted, #666);
+    margin-bottom: 6px;
+  }
+
+  .big {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.35;
+    word-break: break-word;
+    text-align: center;
+  }
+
+  .sub {
+    font-size: 12px;
+    color: var(--muted, #777);
+    margin-top: 4px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  @media (max-width: 360px) {
     .dashboard-row {
-      display: flex;
-      gap: 12px;
-      padding: 0;
+      flex-direction: column;
     }
+  }
 
-    #statusCard, #burnoutCard {
-      flex: 1 1 0;
-      min-width: 0;
-      padding: 16px;
-      border-radius: 14px;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #666;
-      margin-bottom: 6px;
-    }
-
-    .big {
-      font-size: 17px;
-      font-weight: 800;
-      line-height: 1.35;
-      word-break: break-word;
-      text-align: center;
-    }
-
-    .sub {
-      font-size: 12px;
-      color: #777;
-      margin-top: 4px;
-      line-height: 1.3;
-      text-align: center;
-    }
-
-    @media (max-width: 360px) {
-      .dashboard-row {
-        flex-direction: column;
-      }
-    }
-  `;
+  body.dark-mode {
+    --card-bg: #1e1e1e;
+    --text-color: #eaeaea;
+    --muted: #aaaaaa;
+  }
+`;
 
   document.head.appendChild(style);
 
@@ -137,7 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     <div style="margin-top:12px; border-top:1px solid #eee; padding-top:10px;">
       <div class="sub">Expected Finish Date</div>
-      <div style="font-weight:800; font-size:14px; color:#333;">
+      <div class="big">
         ${formattedDate}
       </div>
     </div>
@@ -269,8 +276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         <div style="
           font-size:9px;
-          color:#777;
-        ">
+        " class="sub">
           ${d.label}
         </div>
       </div>
