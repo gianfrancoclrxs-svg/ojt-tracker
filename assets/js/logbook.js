@@ -2,38 +2,70 @@ import { db } from "./firebase.js";
 import { safeParseTime } from "./utils.js";
 
 // ===============================
+// CACHE (prevents repeated reads)
+// ===============================
+let logCache = {};
+
+// ===============================
 // LOGBOOK MODULE (GLOBAL EXPORT)
 // ===============================
-// IMPORTANT:
-// exposed on window because it's called from HTML onclick / inline scripts
 window.loadLogbook = async function (month = null, year = null) {
 
   const userDocId = localStorage.getItem("userDocId");
-
-  // IMPORTANT:
-  // no user session = no database query
   if (!userDocId) return;
 
-  const snapshot = await db.collection("users")
-    .doc(userDocId)
-    .collection("ojt_records")
-    .orderBy("date", "asc")
-    .get();
-
   const tbody = document.getElementById("logTableBody");
-
   if (!tbody) return;
+
+  // fallback to current date
+  const now = new Date();
+  month = month || (now.getMonth() + 1);
+  year = year || now.getFullYear();
+
+  const cacheKey = `${month}-${year}`;
+
+  // ===============================
+  // USE CACHE FIRST
+  // ===============================
+  if (logCache[cacheKey]) {
+    renderLogs(logCache[cacheKey], tbody);
+    return;
+  }
+
+  try {
+    const snapshot = await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .where("month", "==", month)
+      .where("year", "==", year)
+      .orderBy("date", "asc")
+      .get();
+
+    const logs = [];
+
+    snapshot.forEach(doc => {
+      logs.push({ id: doc.id, ...doc.data() });
+    });
+
+    // save to cache
+    logCache[cacheKey] = logs;
+
+    renderLogs(logs, tbody);
+
+  } catch (err) {
+    console.error("Error loading logs:", err);
+  }
+};
+
+// ===============================
+// RENDER TABLE
+// ===============================
+function renderLogs(logs, tbody) {
 
   tbody.innerHTML = "";
 
-  // ===============================
-  // RENDER TABLE ROWS
-  // ===============================
-  snapshot.forEach(doc => {
+  logs.forEach(d => {
 
-    const d = doc.data();
-
-    // calculate AM/PM hours safely
     const am = (d.am_in && d.am_out)
       ? safeParseTime(d.am_out) - safeParseTime(d.am_in)
       : 0;
@@ -43,9 +75,6 @@ window.loadLogbook = async function (month = null, year = null) {
       : 0;
 
     const total = (am + pm).toFixed(2);
-
-    // IMPORTANT:
-    // status overrides computed hours for absent days
     const displayTotal = d.status === "Absent" ? "Absent" : total;
 
     tbody.innerHTML += `
@@ -57,25 +86,19 @@ window.loadLogbook = async function (month = null, year = null) {
         <td>${d.pm_out || "-"}</td>
         <td>${displayTotal}</td>
         <td>
-          <button onclick="deleteLog('${doc.id}')">
-            Delete
-          </button>
+          <button onclick="deleteLog('${d.id}')">Delete</button>
         </td>
       </tr>
     `;
   });
-};
-
+}
 
 // ===============================
 // DELETE LOG ENTRY
 // ===============================
-// IMPORTANT:
-// destructive action → always confirm in UI layer if possible
 window.deleteLog = async function (id) {
 
   const userDocId = localStorage.getItem("userDocId");
-
   if (!userDocId) return;
 
   await db.collection("users")
@@ -86,6 +109,13 @@ window.deleteLog = async function (id) {
 
   alert("Deleted");
 
-  // refresh table after deletion
-  loadLogbook();
+  // ===============================
+  // CLEAR CACHE (important)
+  // ===============================
+  logCache = {};
+
+  const month = parseInt(document.getElementById("filterMonth")?.value);
+  const year = parseInt(document.getElementById("filterYear")?.value);
+
+  loadLogbook(month, year);
 };

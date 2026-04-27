@@ -378,17 +378,25 @@ async function updateGreetingCard() {
 
   let total = 0;
 
+  function timeToDecimal(t) {
+    if (!t) return 0;
+    const parts = t.split(":");
+    const h = Number(parts[0]) || 0;
+    const m = Number(parts[1]) || 0;
+    return h + (m / 60);
+  }
+
   snapshot.forEach(doc => {
 
     const d = doc.data();
 
     if (d.status !== "Absent") {
       const am = (d.am_in && d.am_out)
-        ? parseFloat(d.am_out) - parseFloat(d.am_in)
+        ? timeToDecimal(d.am_out) - timeToDecimal(d.am_in)
         : 0;
 
       const pm = (d.pm_in && d.pm_out)
-        ? parseFloat(d.pm_out) - parseFloat(d.pm_in)
+        ? timeToDecimal(d.pm_out) - timeToDecimal(d.pm_in)
         : 0;
 
       total += am + pm;
@@ -400,7 +408,6 @@ async function updateGreetingCard() {
   document.getElementById("remainingHours").textContent =
     `${remaining.toFixed(2)}h Remaining`;
 }
-
 
 // ===============================
 // TOTAL HOURS CALC

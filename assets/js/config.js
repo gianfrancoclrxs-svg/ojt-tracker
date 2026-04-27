@@ -1,5 +1,5 @@
 window.APP_CONFIG = {
-  version: "2.1.10",
+  version: "2.1.12",
 
   whatsNew: [
     {
@@ -23,10 +23,12 @@ window.APP_CONFIG = {
     {
       title: "Bug fixes and improvements",
       details: [
+        "Corrected remaining hours display on the homepage",
+        "Resolved DTR printing functionality issues",
         "Fixed top bar layout issues",
         "Improved dark mode consistency",
         "Resolved auto reload problems",
-        "Fixed card color inconsistencies"
+        "Fixed card color inconsistencies",
       ]
     }
   ]
