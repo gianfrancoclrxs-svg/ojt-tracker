@@ -13,6 +13,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const style = document.createElement("style");
 
 style.textContent = `
+  :root {
+    --card-bg: #ffffff;
+    --text-color: #111;
+    --muted: #666;
+    --border-color: #e5e5e5;
+  }
+
+  body.dark-mode {
+    --card-bg: #1e1e1e;
+    --text-color: #eaeaea;
+    --muted: #aaaaaa;
+    --border-color: #333;
+  }
+
   .dashboard-row,
   #weeklyChart {
     width: 100%;
@@ -33,14 +47,16 @@ style.textContent = `
     padding: 16px;
     border-radius: 14px;
     background: var(--card-bg);
-    color: var(--text-color, #111);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.20);
+    color: var(--text-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
   }
 
   .title {
     font-size: 13px;
     font-weight: 700;
-    color: var(--muted, #666);
+    color: var(--muted);
     margin-bottom: 6px;
   }
 
@@ -54,7 +70,7 @@ style.textContent = `
 
   .sub {
     font-size: 12px;
-    color: var(--muted, #777);
+    color: var(--muted);
     margin-top: 4px;
     line-height: 1.3;
     text-align: center;
@@ -66,10 +82,9 @@ style.textContent = `
     }
   }
 
-  body.dark-mode {
-    --card-bg: #1e1e1e;
-    --text-color: #eaeaea;
-    --muted: #aaaaaa;
+  #burnoutCard a:hover {
+    transform: scale(1.02);
+    display: block;
   }
 `;
 
@@ -288,60 +303,68 @@ style.textContent = `
   const row3 = dots.slice(6, 9).join("");
 
   document.getElementById("burnoutCard").innerHTML = `
-    <div class="title">Burnout Monitor</div>
+  <a href="burnout.html" style="text-decoration:none; color:inherit;">
 
-    <div style="display:flex; flex-direction:column; gap:10px; margin:10px 0;">
-      <div style="display:flex; gap:12px; justify-content:center;">
-        ${row1}
+    <div style="cursor:pointer;">
+
+      <div class="title">Burnout Monitor</div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin:10px 0;">
+        <div style="display:flex; gap:12px; justify-content:center;">
+          ${row1}
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:center;">
+          ${row2}
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:center;">
+          ${row3}
+        </div>
       </div>
 
-      <div style="display:flex; gap:12px; justify-content:center;">
-        ${row2}
+      <div class="big" style="color:${burnoutColor}">
+        ${burnoutText}
       </div>
 
-      <div style="display:flex; gap:12px; justify-content:center;">
-        ${row3}
+      <div class="sub">
+        ${insight}
       </div>
+
+      <div style="
+        margin-top:12px;
+        display:flex;
+        justify-content:center;
+        gap:10px;
+        flex-wrap:wrap;
+        font-size:10px;
+        color:#666;
+      ">
+
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:#f44336;">●</span>
+          Heavy (9h+)
+        </div>
+
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:#4caf50;">●</span>
+          Normal (6–8h)
+        </div>
+
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:#ffb300;">●</span>
+          Light (1–5h)
+        </div>
+
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:#bdbdbd;">●</span>
+          No record
+        </div>
+
+      </div>
+
     </div>
 
-    <div class="big" style="color:${burnoutColor}">
-      ${burnoutText}
-    </div>
-
-    <div class="sub">
-      ${insight}
-    </div>
-
-    <div style="
-      margin-top:12px;
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      font-size:10px;
-      color:#666;
-    ">
-
-      <div style="display:flex; align-items:center; gap:4px;">
-        <span style="color:#f44336;">●</span>
-        Heavy (9h+)
-      </div>
-
-      <div style="display:flex; align-items:center; gap:4px;">
-        <span style="color:#4caf50;">●</span>
-        Normal (6–8h)
-      </div>
-
-      <div style="display:flex; align-items:center; gap:4px;">
-        <span style="color:#ffb300;">●</span>
-        Light (1–5h)
-      </div>
-
-      <div style="display:flex; align-items:center; gap:4px;">
-        <span style="color:#bdbdbd;">●</span>
-        No record
-      </div>
-
-    </div>
-  `;
+  </a>
+`;
 });

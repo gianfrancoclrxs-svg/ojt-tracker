@@ -6,6 +6,15 @@
 <title>OJT Tracker - Homepage</title>
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
+<style>
+  #ringCard {
+    transition: transform 0.15s ease;
+  }
+
+  #ringCard:active {
+    transform: scale(0.98);
+  }
+</style>
 </head>
 <body>
 
@@ -34,7 +43,7 @@
   </div>
 
 <!-- OJT Progress Card -->
-<div class="ojt-progress-card">
+<div class="ojt-progress-card" id="ringCard">
 
   <!-- LEFT: Ring -->
   <div class="ring-wrapper">

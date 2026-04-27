@@ -134,72 +134,204 @@
 <script src="/assets/js/components/footer.js"></script>
 <script src="/assets/js/components/topbar.js"></script>
 <script>
-const today = new Date();
-loadLogbook(today.getMonth() + 1, today.getFullYear());
+document.addEventListener("DOMContentLoaded", async () => {
 
-document.getElementById("filterMonth").value = today.getMonth() + 1;
-document.getElementById("filterYear").value = today.getFullYear();
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return;
 
-loadLogbook(today.getMonth() + 1, today.getFullYear());
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const modeToggle = document.getElementById("modeToggle");
+  const ring = document.getElementById("ringFill");
+  const percentEl = document.getElementById("percent");
 
-  if (modeToggle) {
-    modeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark-mode");
-      const icon = document.querySelector("#modeToggle i");
-      if (icon) {
-        icon.classList.toggle("fa-moon");
-        icon.classList.toggle("fa-sun");
-      }
-    });
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+
+  // ================= USER DATA =================
+  const userDoc = await db.collection("users").doc(userDocId).get();
+  const data = userDoc.data();
+  window.userData = data;
+
+  // ================= AUTO UPDATE LATE THRESHOLD (ADDED ONLY) =================
+  db.collection("users").doc(userDocId).onSnapshot((doc) => {
+    const updated = doc.data();
+    if (!updated) return;
+
+    window.userData = updated;
+
+    const lateLabel = document.getElementById("lateTimeDisplay");
+
+    function formatTime12h(t) {
+      let [h, m] = t.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h}:${m.toString().padStart(2,'0')} ${ampm}`;
+    }
+
+    if (lateLabel) {
+      lateLabel.innerText = `Late (${formatTime12h(updated.late_threshold || "08:00")})`;
+    }
+  });
+
+  const requiredHours = Number(data?.target_hours || 486);
+
+  const { total } = await getTotalRecordedHours(userDocId);
+  const totalHours = Number(total || 0);
+
+  const percent = Math.min((totalHours / requiredHours) * 100, 100);
+
+  // ================= MILESTONE =================
+  let milestone = "Starting out";
+  let color = "#f44336";
+
+  if (percent >= 75) {
+    milestone = "Almost Complete";
+    color = "#4caf50";
+  } else if (percent >= 50) {
+    milestone = "In Progress";
+    color = "#ffb300";
+  } else if (percent >= 25) {
+    milestone = "Getting Started";
+    color = "#ff7043";
   }
-});
 
-if (localStorage.getItem("loggedIn") !== "true" || !localStorage.getItem("userDocId")) {
-  location.href = "index.html";
-}
+  document.getElementById("milestoneText").textContent = milestone;
+  document.getElementById("milestoneText").style.color = color;
 
-document.getElementById("filterBtn").addEventListener("click", () => {
-  const month = parseInt(document.getElementById("filterMonth").value);
-  const year = parseInt(document.getElementById("filterYear").value);
+  document.getElementById("hoursText").textContent =
+    `${Math.floor(totalHours)} / ${requiredHours} hrs`;
 
-  loadLogbook(month, year);
-});
+  const left = Math.max(requiredHours - totalHours, 0);
 
-document.getElementById("printDtrBtn").addEventListener("click", () => {
-  document.getElementById("dtrPopup").style.display = "flex";
-});
+  document.getElementById("accHours").textContent =
+    `${Math.floor(totalHours)}h ${Math.round((totalHours % 1) * 60)}m`;
 
-document.getElementById("closeDtrPopup").addEventListener("click", () => {
-  document.getElementById("dtrPopup").style.display = "none";
-});
+  document.getElementById("leftHours").textContent =
+    `${Math.floor(left)}h ${Math.round((left % 1) * 60)}m`;
 
-document.getElementById("generateDtrBtn").addEventListener("click", () => {
-  const month = document.getElementById("dtrMonth").value;
-  const year = document.getElementById("dtrYear").value;
+  // ================= ANIMATION =================
+  let progress = 0;
 
-  if (!month || !year) {
-    alert("Enter month and year");
-    return;
+  function animate() {
+    progress += 1.5;
+    if (progress > percent) progress = percent;
+
+    const offset = circumference - (progress / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+
+    percentEl.textContent = Math.round(progress) + "%";
+
+    if (progress < percent) requestAnimationFrame(animate);
   }
 
-  document.getElementById("dtrPopup").style.display = "none";
+  animate();
 
-  const url = `dtr.html?month=${month}&year=${year}`;
+  // ================= ATTENDANCE =================
+  const snapshot = await db.collection("users")
+    .doc(userDocId)
+    .collection("ojt_records")
+    .get();
 
-  const win = window.open(url, "_blank");
+  let present = 0, half = 0, absent = 0, late = 0;
 
-  if (!win) {
-    alert("Popup blocked. Please allow popups for this site.");
-    return;
+  const lateThreshold = data?.late_threshold || "08:00";
+
+  function formatTime12h(t) {
+    let [h, m] = t.split(":").map(Number);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${m.toString().padStart(2,'0')} ${ampm}`;
   }
 
-  // safer approach: let dtr.html handle printing itself
-});
+  const lateLabel = document.getElementById("lateTimeDisplay");
+  if (lateLabel) {
+    lateLabel.innerText = `Late (${formatTime12h(lateThreshold)})`;
+  }
 
+  const [ltH, ltM] = lateThreshold.split(":").map(Number);
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    const status = (d.status || "").toLowerCase();
+
+    if (status.includes("absent")) absent++;
+    else if (status.includes("half")) half++;
+    else present++;
+
+    if (d.am_in) {
+      const time = d.am_in.match(/(\d{1,2}):(\d{2})/);
+      if (!time) return;
+
+      const h = parseInt(time[1]);
+      const m = parseInt(time[2]);
+
+      if (h > ltH || (h === ltH && m > ltM)) late++;
+    }
+  });
+
+  document.getElementById("presentDays").textContent = present;
+  document.getElementById("halfDays").textContent = half;
+  document.getElementById("absentDays").textContent = absent;
+  document.getElementById("lateDays").textContent = late;
+
+  // ================= EXPECTED =================
+  const dailyAvg = totalHours / Math.max(present + half, 1);
+  const remainingDays = Math.ceil(left / Math.max(dailyAvg, 1));
+
+  const today = new Date();
+
+  const addWorkingDays = (startDate, days) => {
+    const date = new Date(startDate);
+    let added = 0;
+
+    while (added < days) {
+      date.setDate(date.getDate() + 1);
+      const day = date.getDay();
+      const isWeekend = (day === 0 || day === 6);
+
+      if (!isWeekend) added++;
+    }
+
+    return date;
+  };
+
+  function formatDatePretty(date) {
+    const d = new Date(date);
+    const month = d.toLocaleString("en-US", { month: "long" });
+    const day = d.getDate();
+    const year = d.getFullYear();
+    const weekday = d.toLocaleString("en-US", { weekday: "long" });
+
+    return `${month} ${day}, ${year} (${weekday})`;
+  }
+
+  document.getElementById("expectedList").innerHTML = `
+    <div style="padding:14px;border-radius:14px;background:#f1f8ff;border-left:5px solid #2196f3;">
+        📌 <b>Normal Pace</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you maintain your current attendance, you are expected to finish on:
+        <br><b>${formatDatePretty(addWorkingDays(today, remainingDays))}</b>
+        </div>
+    </div>
+
+    <div style="padding:14px;border-radius:14px;background:#fff8e1;border-left:5px solid #ff9800;">
+        ⚠️ <b>Slow Attendance</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you miss more days or reduce consistency:
+        <br><b>${formatDatePretty(addWorkingDays(today, Math.round(remainingDays * 1.2)))}</b>
+        </div>
+    </div>
+
+    <div style="padding:14px;border-radius:14px;background:#e8f5e9;border-left:5px solid #4caf50;">
+        🚀 <b>Consistent Grind</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you stay consistent or improve attendance speed:
+        <br><b>${formatDatePretty(addWorkingDays(today, Math.round(remainingDays * 0.9)))}</b>
+        </div>
+    </div>
+  `;
+});
 </script>
-
 </body>
 </html>

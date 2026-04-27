@@ -184,3 +184,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   milestoneEl.style.fontWeight = "800";
 
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const ringCard = document.getElementById("ringCard");
+
+  if (ringCard) {
+    ringCard.style.cursor = "pointer";
+
+    ringCard.addEventListener("click", () => {
+      window.location.href = "ring.html";
+    });
+  }
+});

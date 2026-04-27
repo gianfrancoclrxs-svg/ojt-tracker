@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Burnout Insights</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #111;
+    --muted: #666;
+    --border: #e5e5e5;
+}
+
+body.dark-mode {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --text: #eee;
+    --muted: #aaa;
+    --border: #333;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.container {
+    max-width: 480px;
+    margin: auto;
+    padding: 16px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.big {
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.sub {
+    font-size: 12px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.dots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:scale(0.6);}
+    to {opacity:1; transform:scale(1);}
+}
+
+.energy-bar {
+    height: 10px;
+    border-radius: 10px;
+    background: #ddd;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.energy-fill {
+    height: 100%;
+    background: linear-gradient(to right, #4caf50, #ffb300, #f44336);
+    transition: width 0.5s ease;
+}
+
+.signal {
+    text-align: center;
+    font-size: 22px;
+    margin: 10px 0;
+}
+
+.pulse {
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% {transform: scale(1);}
+    50% {transform: scale(1.2);}
+    100% {transform: scale(1);}
+}
+
+.suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.suggestion {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.02);
+}
+
+.emotion-wrap {
+margin-top: 12px;
+text-align: center;
+}
+
+.emotion-face {
+font-size: 40px;
+margin-bottom: 8px;
+}
+
+#emotionSlider {
+width: 100%;
+-webkit-appearance: none;
+height: 8px;
+border-radius: 10px;
+outline: none;
+
+background: linear-gradient(to right,
+  #6a040f,
+  #d00000,
+  #e85d04,
+  #f48c06,
+  #faa307,
+  #ffd60a,
+  #a7c957,
+  #52b788,
+  #219ebc,
+  #3a86ff
+);
+}
+
+#emotionSlider::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 20px;
+height: 20px;
+background: white;
+border: 2px solid #333;
+border-radius: 50%;
+cursor: pointer;
+}
+
+.emotion-label {
+margin-top: 8px;
+font-size: 14px;
+color: var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div id="topBarContainer"></div>
+<div class="container">
+
+<div class="card">
+    <div class="big">Your Work Pattern Tells a Story</div>
+    <div class="sub">Here’s what your last 9 days reveal about your energy</div>
+</div>
+
+<div class="card">
+  <div class="title">How are you feeling today?</div>
+  <div class="sub">Drag the slider to match your current state</div>
+
+  <div class="emotion-wrap">
+    <div id="emotionFace" class="emotion-face"></div>
+
+    <input id="emotionSlider" type="range" min="0" max="9" step="1" value="5">
+
+    <div class="emotion-label" id="emotionLabel">Neutral</div>
+  </div>
+</div>
+
+<div class="card">
+    <div class="title">Activity Pattern</div>
+    <div id="dots" class="dots"></div>
+</div>
+
+<div class="card">
+    <div class="title">Energy Level</div>
+    <div class="big" id="energyText">--%</div>
+    <div class="energy-bar">
+    <div id="energyFill" class="energy-fill"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="title">Burnout Signal</div>
+    <div id="signal" class="signal"></div>
+    <div id="signalText" class="sub"></div>
+</div>
+
+<div class="card">
+    <div class="title">Your Pattern Story</div>
+    <div id="story" class="sub"></div>
+</div>
+
+<div class="card">
+    <div class="title">Recovery Suggestions</div>
+    <div class="suggestions" id="suggestions"></div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+const userDocId = localStorage.getItem("userDocId");
+if (!userDocId) return;
+
+const snap = await db.collection("users")
+.doc(userDocId)
+.collection("ojt_records")
+.get();
+
+function safeParse(t) {
+if (!t || !t.includes(":")) return 0;
+const [h, m] = t.split(":").map(Number);
+return h * 60 + m;
+}
+
+function getLast9Days() {
+const arr = [];
+const today = new Date();
+
+for (let i = 9; i >= 1; i--) {
+const d = new Date(today);
+d.setDate(today.getDate() - i);
+
+const yyyy = d.getFullYear();
+const mm = String(d.getMonth() + 1).padStart(2, "0");
+const dd = String(d.getDate()).padStart(2, "0");
+
+arr.push(`${yyyy}-${mm}-${dd}`);
+}
+
+return arr;
+}
+
+const map = {};
+snap.forEach(doc => {
+const d = doc.data();
+if (!d.date) return;
+
+const am = (d.am_in && d.am_out)
+? safeParse(d.am_out) - safeParse(d.am_in)
+: 0;
+
+const pm = (d.pm_in && d.pm_out)
+? safeParse(d.pm_out) - safeParse(d.pm_in)
+: 0;
+
+map[d.date] = (am + pm) / 60;
+});
+
+const days = getLast9Days();
+const dotsContainer = document.getElementById("dots");
+
+let baseEnergy = 100;
+let heavyCount = 0;
+let story = [];
+
+days.forEach((date, i) => {
+const h = map[date] || 0;
+
+let color = "#bdbdbd";
+
+if (h >= 9) {
+color = "#f44336";
+baseEnergy -= 12;
+heavyCount++;
+story.push("You pushed hard");
+} else if (h >= 6) {
+color = "#4caf50";
+baseEnergy -= 5;
+story.push("You worked steadily");
+} else if (h > 0) {
+color = "#ffb300";
+baseEnergy -= 2;
+story.push("You had a light day");
+} else {
+baseEnergy += 6;
+story.push("You rested");
+}
+
+const dot = document.createElement("div");
+dot.className = "dot";
+dot.style.background = color;
+dot.style.animationDelay = (i * 0.1) + "s";
+
+dot.onclick = () => {
+alert(`You worked ${h.toFixed(1)} hours on this day`);
+};
+
+dotsContainer.appendChild(dot);
+});
+
+baseEnergy = Math.max(0, Math.min(100, baseEnergy));
+
+const signal = document.getElementById("signal");
+const signalText = document.getElementById("signalText");
+const storyEl = document.getElementById("story");
+const sug = document.getElementById("suggestions");
+
+const summary = {
+push: 0,
+steady: 0,
+light: 0,
+rest: 0
+};
+
+story.forEach(s => {
+if (s.includes("pushed")) summary.push++;
+else if (s.includes("steadily")) summary.steady++;
+else if (s.includes("light")) summary.light++;
+else summary.rest++;
+});
+
+let storyText = "";
+
+if (summary.push >= 3) {
+storyText += "Your recent days show high intensity and strong output. ";
+storyText += "You’ve been pushing your limits more often than usual. ";
+}
+
+if (summary.steady >= 3) {
+storyText += "There is structure in your workflow, with moments of consistency and control. ";
+}
+
+if (summary.light >= 2) {
+storyText += "Some lighter days helped reduce pressure, even if briefly. ";
+}
+
+if (summary.rest >= 2) {
+storyText += "Rest exists in your pattern, but may not yet be enough for full recovery. ";
+}
+
+if (!storyText) {
+storyText = "Your activity pattern is still forming. More data is needed to understand your rhythm clearly.";
+}
+
+storyEl.innerText = storyText.trim();
+
+storyEl.style.fontSize = "13px";
+storyEl.style.lineHeight = "1.4";
+storyEl.style.whiteSpace = "pre-line";
+
+let baseSuggestions = [];
+
+const addBaseSuggestion = (t, d) => {
+baseSuggestions.push([t, d]);
+};
+
+let heavyDays = 0;
+let steadyDays = 0;
+let lightDays = 0;
+let restDays = 0;
+let overtimeDays = 0;
+
+days.forEach(date => {
+const h = map[date] || 0;
+
+if (h >= 9) {
+heavyDays++;
+overtimeDays++;
+}
+else if (h >= 6) steadyDays++;
+else if (h > 0) lightDays++;
+else restDays++;
+});
+
+if (heavyDays >= 4) {
+addBaseSuggestion("🔥 High Workload Pattern",
+`You recorded ${heavyDays} high-workload days within 9 days.`);
+}
+
+if (overtimeDays >= 3) {
+addBaseSuggestion("⏱️ Frequent Extended Work Hours",
+`You exceeded expectations on ${overtimeDays} days.`);
+}
+
+if (restDays >= 4) {
+addBaseSuggestion("🧠 Low Activity Frequency",
+"Multiple low-activity days detected.");
+}
+
+if (heavyDays + overtimeDays > restDays) {
+addBaseSuggestion("⚖️ Workload vs Recovery Imbalance",
+"Work output exceeds recovery periods.");
+}
+
+if (lightDays + restDays >= 6) {
+addBaseSuggestion("📉 Reduced Activity Trend",
+"Majority of recent days show low intensity.");
+}
+
+if (steadyDays >= 4 && heavyDays <= 2 && restDays >= 2) {
+addBaseSuggestion("📊 Consistent Work Performance",
+"Balanced distribution detected.");
+}
+
+if (restDays >= 2 && steadyDays >= 3 && heavyDays <= 2) {
+addBaseSuggestion("🌱 Sustainable Work Pattern",
+"Stable pacing suitable for productivity.");
+}
+
+if (restDays <= 1) {
+addBaseSuggestion("🚨 Limited Recovery Time",
+"Minimal rest days recorded.");
+}
+
+if (heavyDays >= 2 && lightDays === 0 && restDays === 0) {
+addBaseSuggestion("⚠️ Continuous High-Intensity Work Cycle",
+"No recovery variation observed.");
+}
+
+if (restDays >= 3 && heavyDays <= 2) {
+addBaseSuggestion("🌙 Active Recovery Behavior",
+"Regular rest supports recovery.");
+}
+
+if (steadyDays >= 5) {
+addBaseSuggestion("📈 Strong Consistency Pattern",
+"Stable execution pattern detected.");
+}
+
+if (baseSuggestions.length === 0) {
+addBaseSuggestion("📊 Monitoring in Progress",
+"Insufficient data detected.");
+}
+
+function renderUI(sliderVal = 5) {
+
+let adjustedEnergy = baseEnergy + (sliderVal - 5) * 8;
+adjustedEnergy = Math.max(0, Math.min(100, adjustedEnergy));
+
+document.getElementById("energyText").innerText = Math.round(adjustedEnergy) + "%";
+document.getElementById("energyFill").style.width = adjustedEnergy + "%";
+
+let heavyBoost = sliderVal > 7 ? 1 : 0;
+let lowMood = sliderVal < 3 ? 1 : 0;
+
+if (heavyCount + heavyBoost >= 4) {
+signal.innerHTML = "🔴";
+signal.classList.add("pulse");
+signalText.innerText = "Your pattern shows overload. Consider rest.";
+} else if (adjustedEnergy < 50 || lowMood) {
+signal.innerHTML = "🟡";
+signal.classList.remove("pulse");
+signalText.innerText = "Your energy is dropping. Be careful.";
+} else {
+signal.innerHTML = "🟢";
+signal.classList.remove("pulse");
+signalText.innerText = "You are maintaining a healthy pace.";
+}
+
+sug.innerHTML = "";
+
+let modifiedSuggestions = [...baseSuggestions];
+
+if (sliderVal <= 2) {
+modifiedSuggestions.unshift([
+"🧠 Self-Reported Low Mood",
+"Your current input indicates emotional fatigue regardless of workload."
+]);
+}
+
+if (sliderVal >= 8) {
+modifiedSuggestions.unshift([
+"⚡ High Confidence State",
+"Self-reported high energy may buffer workload stress."
+]);
+}
+
+modifiedSuggestions.slice(0, 10).forEach(s => {
+const div = document.createElement("div");
+div.className = "suggestion";
+div.innerHTML = `<b>${s[0]}</b><br>${s[1]}`;
+sug.appendChild(div);
+});
+}
+
+renderUI(5);
+
+const slider = document.getElementById("emotionSlider");
+const face = document.getElementById("emotionFace");
+const label = document.getElementById("emotionLabel");
+
+const emotions = [
+{ text: "Burned Out", emoji: "☠️" },
+{ text: "Very Low", emoji: "😫" },
+{ text: "Low", emoji: "😔" },
+{ text: "Down", emoji: "😞" },
+{ text: "Slightly Low", emoji: "🙁" },
+{ text: "Neutral", emoji: "😐" },
+{ text: "Okay", emoji: "🙂" },
+{ text: "Good", emoji: "😊" },
+{ text: "Very Good", emoji: "😄" },
+{ text: "Excellent", emoji: "😌" }
+];
+
+function updateEmotion(val) {
+const e = emotions[val];
+face.innerText = e.emoji;
+label.innerText = e.text;
+renderUI(Number(val));
+}
+
+updateEmotion(slider.value);
+
+slider.addEventListener("input", (e) => {
+updateEmotion(e.target.value);
+});
+
+});
+</script>
+
+</body>
+</html>

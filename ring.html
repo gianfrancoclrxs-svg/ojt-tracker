@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OJT Ring Dashboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --text: #111;
+  --muted: #666;
+  --border: #e5e5e5;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 16px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.ring-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: auto;
+}
+
+.progress-ring {
+  transform: rotate(90deg) scaleX(-1);
+}
+
+.ring-percent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.center { text-align: center; }
+
+.milestone {
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat {
+  background: rgba(0,0,0,0.05);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* modal */
+#lateModal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+</style>
+</head>
+
+<body>
+
+<div id="topBarContainer"></div>
+
+<div class="container">
+
+<!-- RING -->
+<div class="card center">
+  <div class="ring-wrapper">
+    <svg class="progress-ring" width="150" height="150">
+      <circle cx="75" cy="75" r="60" stroke="#e6e6e6" stroke-width="14" fill="none"/>
+      <circle id="ringFill" cx="75" cy="75" r="60"
+        stroke="#4caf50"
+        stroke-width="14"
+        stroke-linecap="round"
+        fill="none"/>
+    </svg>
+    <div class="ring-percent" id="percent">0%</div>
+  </div>
+
+  <div style="margin-top:10px">
+    <div id="hoursText">0 / 0 hrs</div>
+    <div class="milestone" id="milestoneText">Starting out</div>
+  </div>
+</div>
+
+<!-- HOURS -->
+<div class="card">
+  <h3>Hours Summary</h3>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+
+    <!-- ACCUMULATED -->
+    <div style="padding:14px;border-radius:14px;background:linear-gradient(135deg,#4caf50,#66bb6a);color:#fff;box-shadow:0 6px 18px rgba(76,175,80,0.25);">
+      <div style="font-size:12px;opacity:0.9;">Accumulated Hours</div>
+      <div style="font-size:22px;font-weight:800;margin-top:4px;" id="accHours">0h 0m</div>
+      <div style="font-size:11px;opacity:0.85;">Total completed OJT hours</div>
+    </div>
+
+    <!-- LEFT -->
+    <div style="padding:14px;border-radius:14px;background:linear-gradient(135deg,#ff9800,#ffb74d);color:#fff;box-shadow:0 6px 18px rgba(255,152,0,0.25);">
+      <div style="font-size:12px;opacity:0.9;">Remaining Hours</div>
+      <div style="font-size:22px;font-weight:800;margin-top:4px;" id="leftHours">0h 0m</div>
+      <div style="font-size:11px;opacity:0.85;">Hours left to complete requirement</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ATTENDANCE -->
+<div class="card">
+  <h3>Attendance</h3>
+  <div class="grid">
+    <div class="stat">Present<br><span id="presentDays">0</span></div>
+    <div class="stat">Half-day<br><span id="halfDays">0</span></div>
+    <div class="stat">Absent<br><span id="absentDays">0</span></div>
+    <div class="stat">
+    Late
+    <br>
+    <span id="lateDays">0</span>
+    <br>
+    <div class="small">
+        <span id="lateTimeDisplay">Late (08:00 AM)</span>
+        <span id="editLateBtn" style="cursor:pointer;color:#111;font-weight:700;margin-left:6px;">
+        Edit
+        </span>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPECTED -->
+<div class="card">
+  <h3>Expected Completion</h3>
+
+  <div style="font-size:12px;color:#666;margin-bottom:10px;">
+    Based on your current attendance pattern and average daily performance.
+  </div>
+
+  <div id="expectedList" style="display:flex;flex-direction:column;gap:12px;"></div>
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div id="lateModal">
+  <div style="background:#fff;padding:20px;border-radius:12px;width:260px;text-align:center;">
+    <h3>Late Time</h3>
+    <input id="lateInput" type="time" style="width:100%;padding:8px;margin:10px 0;">
+    <button id="saveLateBtn" style="width:100%;padding:8px;background:#4caf50;color:#fff;border:none;border-radius:8px;">
+      Save
+    </button>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return;
+
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+
+  const ring = document.getElementById("ringFill");
+  const percentEl = document.getElementById("percent");
+
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+
+  // ================= MAIN FUNCTION =================
+  async function loadDashboard() {
+
+    const userDoc = await db.collection("users").doc(userDocId).get();
+    const data = userDoc.data();
+    window.userData = data;
+
+    const requiredHours = Number(data?.target_hours || 486);
+
+    const { total } = await getTotalRecordedHours(userDocId);
+    const totalHours = Number(total || 0);
+
+    const percent = Math.min((totalHours / requiredHours) * 100, 100);
+
+    // ================= MILESTONE =================
+    let milestone = "Starting out";
+    let color = "#f44336";
+
+    if (percent >= 75) {
+      milestone = "Almost Complete";
+      color = "#4caf50";
+    } else if (percent >= 50) {
+      milestone = "In Progress";
+      color = "#ffb300";
+    } else if (percent >= 25) {
+      milestone = "Getting Started";
+      color = "#ff7043";
+    }
+
+    document.getElementById("milestoneText").textContent = milestone;
+    document.getElementById("milestoneText").style.color = color;
+
+    document.getElementById("hoursText").textContent =
+      `${Math.floor(totalHours)} / ${requiredHours} hrs`;
+
+    const left = Math.max(requiredHours - totalHours, 0);
+
+    document.getElementById("accHours").textContent =
+      `${Math.floor(totalHours)}h ${Math.round((totalHours % 1) * 60)}m`;
+
+    document.getElementById("leftHours").textContent =
+      `${Math.floor(left)}h ${Math.round((left % 1) * 60)}m`;
+
+    // ================= ANIMATION =================
+    let progress = 0;
+
+    function animate() {
+      progress += 1.5;
+      if (progress > percent) progress = percent;
+
+      const offset = circumference - (progress / 100) * circumference;
+      ring.style.strokeDashoffset = offset;
+
+      percentEl.textContent = Math.round(progress) + "%";
+
+      if (progress < percent) requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // ================= ATTENDANCE =================
+    const snapshot = await db.collection("users")
+      .doc(userDocId)
+      .collection("ojt_records")
+      .get();
+
+    let present = 0, half = 0, absent = 0, late = 0;
+
+    const lateThreshold = data?.late_threshold || "08:00";
+
+    function formatTime12h(t) {
+      let [h, m] = t.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h}:${m.toString().padStart(2,'0')} ${ampm}`;
+    }
+
+    const lateLabel = document.getElementById("lateTimeDisplay");
+    if (lateLabel) {
+      lateLabel.innerText = `Late (${formatTime12h(lateThreshold)})`;
+    }
+
+    const [ltH, ltM] = lateThreshold.split(":").map(Number);
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const status = (d.status || "").toLowerCase();
+
+      if (status.includes("absent")) absent++;
+      else if (status.includes("half")) half++;
+      else present++;
+
+      if (d.am_in) {
+        const time = d.am_in.match(/(\d{1,2}):(\d{2})/);
+        if (!time) return;
+
+        const h = parseInt(time[1]);
+        const m = parseInt(time[2]);
+
+        if (h > ltH || (h === ltH && m > ltM)) late++;
+      }
+    });
+
+    document.getElementById("presentDays").textContent = present;
+    document.getElementById("halfDays").textContent = half;
+    document.getElementById("absentDays").textContent = absent;
+    document.getElementById("lateDays").textContent = late;
+
+    // ================= EXPECTED =================
+    const dailyAvg = totalHours / Math.max(present + half, 1);
+    const remainingDays = Math.ceil(left / Math.max(dailyAvg, 1));
+
+    const today = new Date();
+
+    const addWorkingDays = (startDate, days) => {
+      const date = new Date(startDate);
+      let added = 0;
+
+      while (added < days) {
+        date.setDate(date.getDate() + 1);
+        const day = date.getDay();
+        if (day !== 0 && day !== 6) added++;
+      }
+      return date;
+    };
+
+    function formatDatePretty(date) {
+      const d = new Date(date);
+      const month = d.toLocaleString("en-US", { month: "long" });
+      const day = d.getDate();
+      const year = d.getFullYear();
+      const weekday = d.toLocaleString("en-US", { weekday: "long" });
+
+      return `${month} ${day}, ${year} (${weekday})`;
+    }
+
+    document.getElementById("expectedList").innerHTML = `
+      <div style="padding:14px;border-radius:14px;background:#f1f8ff;border-left:5px solid #2196f3;">
+        📌 <b>Normal Pace</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you maintain your current attendance, you are expected to finish on:
+        <br><b>${formatDatePretty(addWorkingDays(today, remainingDays))}</b>
+        </div>
+      </div>
+
+      <div style="padding:14px;border-radius:14px;background:#fff8e1;border-left:5px solid #ff9800;">
+        ⚠️ <b>Slow Attendance</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you miss more days or reduce attendance consistency:
+        <br><b>${formatDatePretty(addWorkingDays(today, Math.round(remainingDays * 1.2)))}</b>
+        </div>
+      </div>
+
+      <div style="padding:14px;border-radius:14px;background:#e8f5e9;border-left:5px solid #4caf50;">
+        🚀 <b>Consistent Grind</b><br>
+        <div style="font-size:13px;margin-top:4px;">
+        If you stay consistent or improve attendance speed:
+        <br><b>${formatDatePretty(addWorkingDays(today, Math.round(remainingDays * 0.9)))}</b>
+        </div>
+      </div>
+    `;
+  }
+
+  // initial load
+  loadDashboard();
+
+  // ================= MODAL =================
+  const editBtn = document.getElementById("editLateBtn");
+  const modal = document.getElementById("lateModal");
+  const saveBtn = document.getElementById("saveLateBtn");
+  const input = document.getElementById("lateInput");
+
+  editBtn?.addEventListener("click", () => {
+    input.value = window.userData?.late_threshold || "08:00";
+    modal.style.display = "flex";
+  });
+
+  saveBtn?.addEventListener("click", async () => {
+    await db.collection("users").doc(userDocId).update({
+      late_threshold: input.value
+    });
+
+    modal.style.display = "none";
+
+    // 🔥 AUTO REFRESH EVERYTHING
+    loadDashboard();
+  });
+
+});
+</script>
+
+</body>
+</html>

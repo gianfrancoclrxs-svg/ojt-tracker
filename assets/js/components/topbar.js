@@ -1,172 +1,136 @@
-// ================= TOP BAR STYLES =================
+// ================= STYLE =================
 const style = document.createElement("style");
 
 style.textContent = `
-    .top-bar {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        padding: 10px 15px;
+.top-bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 10px 15px;
 
-        /* LIGHT MODE (premium soft white) */
-        background: linear-gradient(135deg, #ffffff, #f3f5f7);
-        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    background: linear-gradient(135deg, #ffffff, #f3f5f7);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    color: #111;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
 
-        color: #111;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
+body.dark-mode .top-bar {
+    background: linear-gradient(135deg, #1a1a1a, #111111);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+    color: #fff;
+}
 
-    /* DARK MODE OVERRIDE */
-    body.dark-mode .top-bar {
-        background: linear-gradient(135deg, #1a1a1a, #111111);
-        box-shadow: 0 4px 18px rgba(0,0,0,0.6);
-        color: #ffffff;
-    }
+/* layout */
+.left-side { justify-self: start; display: flex; gap: 10px; }
+.center-title { justify-self: center; font-weight: 600; font-size: 18px; }
+.right-side { justify-self: end; display: flex; gap: 12px; }
 
-    .left-side {
-        justify-self: start;
-    }
+/* ICONS */
+.icon {
+    cursor: pointer;
+    font-size: 18px;
+    color: inherit;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+}
 
-    .center-title {
-        justify-self: center;
-        font-weight: 600;
-        font-size: 18px;
-    }
-
-    .right-side {
-        justify-self: end;
-    }
-
-    #settingsBtn,
-    #backBtn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 18px;
-        color: inherit;
-        transition: 0.2s;
-    }
-
-    #modeToggle {
-        cursor: pointer;
-        font-size: 18px;
-        color: inherit;
-    }
-
-    /* icon hover polish */
-    #settingsBtn:hover,
-    #backBtn:hover,
-    #modeToggle:hover {
-        transform: scale(1.1);
-    }
+.icon:hover {
+    transform: scale(1.15);
+}
 `;
 
 document.head.appendChild(style);
 
-
-// ================= TOP BAR INIT =================
+// ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
 
-    const container = document.getElementById("topBarContainer");
-    if (!container) return; // safety
+const container = document.getElementById("topBarContainer");
+if (!container) return;
 
-    // create main container
-    const topBar = document.createElement("div");
-    topBar.className = "top-bar";
+const topBar = document.createElement("div");
+topBar.className = "top-bar";
 
-    // detect homepage
-    const isHomePage =
-        window.location.pathname.includes("homepage.html") ||
-        window.location.pathname === "/" ||
-        window.location.pathname.endsWith("index.html");
+// ================= SAFE PAGE CHECK =================
+const page = window.location.pathname.split("/").pop().split("?")[0];
+const isHome = page === "homepage.html" || page === "index.html";
 
+// ================= LEFT =================
+const left = document.createElement("div");
+left.className = "left-side";
 
-    // ================= LEFT SIDE =================
-    const leftSide = document.createElement("div");
-    leftSide.className = "left-side";
+// BACK BUTTON (ALL NON-HOME PAGES)
+if (!isHome) {
 
-    if (isHomePage) {
-        const settingsBtn = document.createElement("button");
-        settingsBtn.id = "settingsBtn";
+    const back = document.createElement("i");
+    back.className = "fa-solid fa-arrow-left icon";
 
-        settingsBtn.onclick = () => {
-            window.location.href = "settings.html";
-        };
+    back.onclick = () => {
+        window.history.back();
+    };
 
-        const gearIcon = document.createElement("i");
-        gearIcon.className = "fa-solid fa-gear";
+    left.appendChild(back);
+} else {
+}
 
-        settingsBtn.appendChild(gearIcon);
-        leftSide.appendChild(settingsBtn);
+// ================= CENTER =================
+const center = document.createElement("div");
+center.className = "center-title";
 
-    } else {
-        const backBtn = document.createElement("button");
-        backBtn.id = "backBtn";
+const title = document.createElement("span");
+title.textContent = "OJT Tracker";
 
-        backBtn.onclick = () => {
-            window.history.back();
-        };
+center.appendChild(title);
 
-        const backIcon = document.createElement("i");
-        backIcon.className = "fa-solid fa-arrow-left";
+// ================= RIGHT =================
+const right = document.createElement("div");
+right.className = "right-side";
 
-        backBtn.appendChild(backIcon);
-        leftSide.appendChild(backBtn);
-    }
+// ================= HOME ONLY FEATURES =================
+if (isHome) {
 
+    // SETTINGS
+    const settings = document.createElement("i");
+    settings.className = "fa-solid fa-gear icon";
 
-    // ================= CENTER =================
-    const center = document.createElement("div");
-    center.className = "center-title";
+    settings.onclick = () => {
+        window.location.href = "settings.html";
+    };
 
-    const appName = document.createElement("span");
-    appName.textContent = "OJT Tracker";
+    // DARK MODE
+    const mode = document.createElement("i");
+    mode.className = "icon";
 
-    center.appendChild(appName);
+    const saved = localStorage.getItem("theme");
 
-
-    // ================= RIGHT SIDE =================
-    const rightSide = document.createElement("div");
-    rightSide.className = "right-side";
-
-    const modeToggle = document.createElement("span");
-    modeToggle.id = "modeToggle";
-
-    const icon = document.createElement("i");
-    icon.className = "fa-regular fa-moon";
-
-    modeToggle.appendChild(icon);
-    rightSide.appendChild(modeToggle);
-
-
-    // ================= DARK MODE LOAD =================
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme === "dark") {
-        document.body.classList.add("dark-mode");
-        icon.classList.replace("fa-moon", "fa-sun");
-    }
-
-
-    // ================= DARK MODE TOGGLE =================
-    modeToggle.addEventListener("click", () => {
-        const isDark = document.body.classList.toggle("dark-mode");
-
+    function setTheme(isDark) {
         if (isDark) {
-            icon.classList.replace("fa-moon", "fa-sun");
+            document.body.classList.add("dark-mode");
+            mode.className = "fa-solid fa-sun icon";
             localStorage.setItem("theme", "dark");
         } else {
-            icon.classList.replace("fa-sun", "fa-moon");
+            document.body.classList.remove("dark-mode");
+            mode.className = "fa-regular fa-moon icon";
             localStorage.setItem("theme", "light");
         }
-    });
+    }
 
+    setTheme(saved === "dark");
 
-    // ================= ASSEMBLY =================
-    topBar.appendChild(leftSide);
-    topBar.appendChild(center);
-    topBar.appendChild(rightSide);
+    mode.onclick = () => {
+        setTheme(!document.body.classList.contains("dark-mode"));
+    };
 
-    container.appendChild(topBar);
+    right.appendChild(settings);
+    right.appendChild(mode);
+}
+
+// ================= ASSEMBLE =================
+topBar.appendChild(left);
+topBar.appendChild(center);
+topBar.appendChild(right);
+
+container.appendChild(topBar);
+
 });
