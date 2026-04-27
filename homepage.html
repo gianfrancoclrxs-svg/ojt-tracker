@@ -14,6 +14,112 @@
   #ringCard:active {
     transform: scale(0.98);
   }
+
+#accomModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+
+#accomModalOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+/* ================= POPUP BOX ================= */
+#accomModalBox {
+  position: relative;
+  width: 90%;
+  max-width: 360px;
+
+  margin: 120px auto;
+  background: #fff;
+
+  padding: 16px;
+  border-radius: 14px;
+
+  z-index: 2;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+
+  box-sizing: border-box;
+}
+
+/* ================= TEXTAREA FIX ================= */
+#accomModalBox textarea {
+  width: 100%;
+  max-width: 100%;
+  height: 120px;
+
+  margin-top: 10px;
+  padding: 10px;
+
+  border-radius: 10px;
+  border: 1px solid #ddd;
+
+  resize: none;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  box-sizing: border-box;
+  display: block;
+}
+
+/* ================= ACTIONS ================= */
+.accom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.accom-actions button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* ================= BUTTONS ================= */
+#accomCancel {
+  background: #eee;
+}
+
+#accomSave {
+  background: #4caf50;
+  color: white;
+}
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 480px) {
+  #accomModalBox {
+    margin: 80px auto;
+  }
+}
+
+#todayAccomplishmentCard button {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* PRIMARY (Add/Edit) */
+#editAccomplishmentBtn {
+  background: #4caf50;
+  color: white;
+}
+
+/* SECONDARY (History) */
+#viewAccomplishmentHistoryBtn {
+  background: #2196f3;
+  color: white;
+}
 </style>
 </head>
 <body>
@@ -64,6 +170,26 @@
 
 </div>
 
+
+  <!-- 👇 ADD THIS BELOW ringCard -->
+<div class="card" id="todayAccomplishmentCard">
+  <h3>Today's Accomplishment</h3>
+
+  <p id="todayAccomplishmentText">No accomplishment yet</p>
+
+  <!-- BUTTON GROUP -->
+  <div style="display:flex; flex-direction:column; gap:2px; margin-top:10px;">
+
+    <button id="editAccomplishmentBtn">
+      Add / Edit
+    </button>
+
+    <button id="viewAccomplishmentHistoryBtn">
+      View Past Accomplishments
+    </button>
+  </div>
+</div>
+
 <div id="weeklyChart"></div>
 
 <div class="dashboard-row">
@@ -71,14 +197,33 @@
   <div id="burnoutCard"></div>
 </div>
 
+<!-- ACCOMPLISHMENT MODAL -->
+<div id="accomModal" style="display:none;">
+  <div id="accomModalOverlay"></div>
+
+  <div id="accomModalBox">
+    <h3>Today's Accomplishment</h3>
+
+    <input type="date" id="accomDate">
+    <textarea id="accomInput" placeholder="What did you accomplish today?"></textarea>
+
+    <div class="accom-actions">
+      <button id="accomCancel">Cancel</button>
+      <button id="accomSave">Save</button>
+    </div>
+  </div>
+</div>
+
 </div>
 <script src="/assets/js/components/warning.js"></script>
+<script src="/assets/js/components/accomplishment.js"></script>
 <script src="/assets/js/config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/components/whatsnew.js"></script>
 <script src="/assets/js/components/ring.js"></script>
+<script src="/assets/js/components/accomplishment.js"></script>
 <script src="/assets/js/components/weeklychart.js"></script>
 <script src="/assets/js/components/dashboard-cards.js"></script>
 <script>
