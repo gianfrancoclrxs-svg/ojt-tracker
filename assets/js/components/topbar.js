@@ -122,7 +122,7 @@ if (isHome) {
         setTheme(!document.body.classList.contains("dark-mode"));
     };
 
-    right.appendChild(settings);
+    left.appendChild(settings);
     right.appendChild(mode);
 }
 
