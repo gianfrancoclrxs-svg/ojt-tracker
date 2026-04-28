@@ -219,37 +219,9 @@
 <script src="/assets/js/components/weeklychart.js"></script>
 <script src="/assets/js/components/dashboard-cards.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
-
-    if (
-      localStorage.getItem("loggedIn") !== "true" ||
-      !localStorage.getItem("userDocId")
-    ) {
-      location.href = "index.html";
-      return;
-    }
-
-    await updateGreetingCard();
-
-    checkWhatsNew();
-    
-  });
-
-  async function checkOjtSetup() {
-  const userDocId = localStorage.getItem("userDocId");
-  if (!userDocId) return;
-
-  const doc = await db.collection("users").doc(userDocId).get();
-  if (!doc.exists) return;
-
-  const data = doc.data();
-
-  if (!data.ojt_location || !data.target_hours) {
-    document.getElementById("ojtPopup").style.display = "flex";
-  }
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
+
+  // ================= AUTH CHECK =================
   if (
     localStorage.getItem("loggedIn") !== "true" ||
     !localStorage.getItem("userDocId")
@@ -258,10 +230,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // ================= CORE INIT =================
   await updateGreetingCard();
-  await checkOjtSetup(); 
 
-  checkWhatsNew();
+  // ================= OJT POPUP CHECK =================
+  async function checkOjtSetup() {
+    const userDocId = localStorage.getItem("userDocId");
+    if (!userDocId) return;
+
+    const doc = await db.collection("users").doc(userDocId).get();
+    if (!doc.exists) return;
+
+    const data = doc.data();
+
+    if (!data.ojt_location || !data.target_hours) {
+      const popup = document.getElementById("ojtPopup");
+      if (popup) popup.style.display = "flex";
+      return true;
+    }
+
+    return false;
+  }
+
+  // ================= INIT FLOW =================
+  const ojtPopupShown = await checkOjtSetup();
+
+  // ================= WHAT'S NEW =================
+  function safeCheckWhatsNew() {
+    const existing = document.querySelector(".popup-overlay.whatsnew");
+    if (existing) return;
+
+    checkWhatsNew();
+  }
+
+  if (!ojtPopupShown) {
+    safeCheckWhatsNew();
+  }
+
 });
 </script>
 <script src="/assets/js/components/footer.js"></script>

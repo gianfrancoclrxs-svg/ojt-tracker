@@ -137,33 +137,47 @@ margin-bottom: 8px;
 }
 
 #emotionSlider {
-width: 100%;
-height: 8px;
-border-radius: 10px;
-outline: none;
-
-background: linear-gradient(to right,
-  #6a040f,
-  #d00000,
-  #e85d04,
-  #f48c06,
-  #faa307,
-  #ffd60a,
-  #a7c957,
-  #52b788,
-  #219ebc,
-  #3a86ff
-);
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 10px;
+  outline: none;
+  background: linear-gradient(to right,
+    #6a040f,
+    #d00000,
+    #e85d04,
+    #f48c06,
+    #faa307,
+    #ffd60a,
+    #a7c957,
+    #52b788,
+    #219ebc,
+    #3a86ff
+  );
 }
 
 #emotionSlider::-webkit-slider-thumb {
--webkit-appearance: none;
-width: 20px;
-height: 20px;
-background: white;
-border: 2px solid #333;
-border-radius: 50%;
-cursor: pointer;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#emotionSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#emotionSlider::-moz-range-track {
+  background: transparent;
 }
 
 .emotion-label {
@@ -468,14 +482,14 @@ adjustedEnergy = Math.max(0, Math.min(100, adjustedEnergy));
 document.getElementById("energyText").innerText = Math.round(adjustedEnergy) + "%";
 document.getElementById("energyFill").style.width = adjustedEnergy + "%";
 
-let heavyBoost = sliderVal > 7 ? 1 : 0;
+let moodStress = sliderVal < 3 ? 1 : 0;
 let lowMood = sliderVal < 3 ? 1 : 0;
 
-if (heavyCount + heavyBoost >= 4) {
+if (heavyCount + moodStress >= 4) {
 signal.innerHTML = "🔴";
 signal.classList.add("pulse");
-signalText.innerText = "Your pattern shows overload. Consider rest.";
-} else if (adjustedEnergy < 50 || lowMood) {
+signalText.innerText = "Your pattern shows overload. Consider resting.";
+} else if (adjustedEnergy < 70) {
 signal.innerHTML = "🟡";
 signal.classList.remove("pulse");
 signalText.innerText = "Your energy is dropping. Be careful.";

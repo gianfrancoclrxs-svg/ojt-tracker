@@ -1,4 +1,3 @@
-
 // ================= FIRESTORE SAFETY CHECK =================
 // prevents silent failures if Firebase isn't loaded properly
 if (typeof db === "undefined") {
@@ -6,16 +5,14 @@ if (typeof db === "undefined") {
 }
 
 // ================= VERSION CONTROL =================
-// IMPORTANT:
-// update this manually every time you release a new feature batch
 const CURRENT_WHATSNEW_VERSION = window.APP_CONFIG.version;
 
 // ================= WHAT'S NEW MODAL =================
-// reusable popup that shows app updates
 function createWhatsNewModal(onClose) {
 
   const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
+  overlay.className = "popup-overlay whatsnew";
+  overlay.style.zIndex = "99999"; 
 
   overlay.innerHTML = `
     <div class="popup">
@@ -43,22 +40,21 @@ function createWhatsNewModal(onClose) {
   document.body.appendChild(overlay);
 
   // ================= CLOSE HANDLER =================
-  // removes modal + triggers version update callback
   document.getElementById("closeWhatsNew").addEventListener("click", () => {
     overlay.remove();
     onClose();
   });
 }
 
-// ================= VERSION CHECK LOGIC =================
-// decides whether user should see "What’s New" popup
 async function checkWhatsNew() {
 
   const userDocId = localStorage.getItem("userDocId");
 
-  // IMPORTANT:
-  // no user → skip entirely (no Firestore call wasted)
   if (!userDocId) return;
+
+  if (document.getElementById("ojtPopup")?.style.display === "flex") {
+    return;
+  }
 
   const userRef = db.collection("users").doc(userDocId);
   const userSnap = await userRef.get();
@@ -67,20 +63,13 @@ async function checkWhatsNew() {
 
   const data = userSnap.data();
 
-  // last version user has already seen
   const lastSeen = data.whatsnew_version || "";
 
-  // if already updated → do nothing
   if (lastSeen === CURRENT_WHATSNEW_VERSION) return;
 
-  // show modal
   createWhatsNewModal(async () => {
-
-    // IMPORTANT:
-    // mark version as seen so popup won’t spam user again
     await userRef.update({
       whatsnew_version: CURRENT_WHATSNEW_VERSION
     });
-
   });
 }
