@@ -1,76 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bulk Logs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Upload</title>
 
 <link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
+
 body {
   margin:0;
-  font-family:Arial;
+  font-family: Arial, sans-serif;
   background:#f5f6f8;
+  color:#111;
 }
 
 .container {
-  max-width:480px;
+  max-width: 480px;
   margin:auto;
-  padding:20px;
+  padding:16px;
 }
 
+/* HEADER */
 .title {
-  font-size:22px;
-  font-weight:800;
-  margin-bottom:20px;
+  font-size:24px;
+  font-weight:900;
 }
 
-.card-btn {
+.subtitle {
+  font-size:13px;
+  color:#666;
+  margin-top:4px;
+  margin-bottom:16px;
+}
+
+/* CARD LIST */
+.list {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* BASE CARD */
+.option {
   background:#fff;
-  padding:20px;
   border-radius:16px;
-  margin-bottom:15px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  padding:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  border:1px solid #e5e5e5;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+
   cursor:pointer;
-  transition:0.2s;
-  text-align:center;
-  font-weight:700;
+  transition:0.2s ease;
 }
 
-.card-btn:hover {
-  transform:scale(1.02);
+.option:hover {
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.10);
 }
 
-.manual { border-left:5px solid #4caf50; }
-.excel { border-left:5px solid #2196f3; }
+/* LEFT */
+.left {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
 
-.small {
+.name {
+  font-size:15px;
+  font-weight:800;
+  text-align: left;
+}
+
+.desc {
   font-size:12px;
   color:#666;
-  margin-top:5px;
 }
+
+/* TAGS */
+.tag {
+  font-size:11px;
+  font-weight:700;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#111;
+  color:#fff;
+}
+
+/* SOFT TAG */
+.tag-soft {
+  font-size:11px;
+  font-weight:700;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#f1f3f5;
+  color:#444;
+}
+
+/* EXCEL RECOMMENDED */
+.excel {
+  border:2px solid #22c55e;
+  position:relative;
+}
+
+.manual {
+  border:2px solid #76aff0;
+  position:relative;
+}
+
+/* ICON */
+.icon {
+  font-size:18px;
+  color:#666;
+}
+
 </style>
 </head>
 
 <body>
 
+<div id="topBarContainer"></div>
+
 <div class="container">
 
   <div class="title">Bulk Upload</div>
+  <div class="subtitle">Choose how you want to log your OJT entries</div>
 
-  <!-- MANUAL -->
-  <div class="card-btn manual" onclick="location.href='manual.html'">
-    ✍️ Manual Entry
-    <div class="small">Auto-fill smart logging (no repetition fatigue)</div>
-  </div>
+  <div class="list">
 
-  <!-- EXCEL -->
-  <div class="card-btn excel" onclick="location.href='excel.html'">
-    📊 Excel Upload
-    <div class="small">Upload template + review compact cards</div>
+    <!-- EXCEL (RECOMMENDED) -->
+    <div class="option excel" onclick="location.href='excel.html'">
+
+      <div class="left">
+        <div class="name">Excel Upload</div>
+        <div class="desc">Best for bulk entries using structured template</div>
+      </div>
+
+      <div class="tag" style="background:#22c55e;">Recommended</div>
+
+    </div>
+
+    <!-- MANUAL -->
+    <div class="option manual" onclick="location.href='manual.html'">
+
+      <div class="left">
+        <div class="name">Manual Entry</div>
+        <div class="desc">Fast logging with smart auto-fill system</div>
+      </div>
+
+      <div class="tag-soft" style="background:#76aff0;">Quick Add</div>
+
+    </div>
+
   </div>
 
 </div>
+
+<!-- SCRIPTS -->
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
+<script src="/assets/js/components/footer.js"></script>
 
 </body>
 </html>
