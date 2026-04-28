@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Excel Upload</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --bg:#f5f6f8;
+  --card:#fff;
+  --text:#111;
+  --muted:#666;
+  --border:#e5e5e5;
+  --primary:#2196f3;
+  --success:#4caf50;
+}
+
+body {
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* TOPBAR */
+#topBarContainer {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+/* CONTAINER */
+.container {
+  max-width:480px;
+  margin:auto;
+  padding:16px;
+}
+
+/* CARD */
+.card {
+  background:var(--card);
+  padding:14px;
+  border-radius:16px;
+  margin-bottom:12px;
+  border:1px solid var(--border);
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* BUTTONS */
+button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.primary { background:var(--primary); color:#fff; }
+.success { background:var(--success); color:#fff; }
+
+input[type="file"] {
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+}
+
+/* PREVIEW */
+.card-item {
+  padding:12px;
+  border-radius:12px;
+  background:#fafafa;
+  border:1px solid var(--border);
+  margin-top:10px;
+  font-size:13px;
+}
+
+.small {
+  font-size:11px;
+  color:var(--muted);
+}
+
+.file-btn {
+  display:block;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid var(--border);
+  font-weight:700;
+  text-align:center;
+  cursor:pointer;
+  box-sizing:border-box;
+  transition:0.2s;
+}
+
+.file-btn:hover {
+  background:#f2f2f2;
+}
+
+/* hide default input */
+.file-btn input {
+  display:none;
+}
+</style>
+</head>
+
+<body>
+<div id="topBarContainer"></div>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="card">
+  <h3>📊 Bulk Excel Upload</h3>
+
+  <button class="primary" onclick="downloadTemplate()">
+    ⬇ Download Template
+  </button>
+
+  <label class="file-btn">
+    <input type="file" id="file" accept=".xlsx,.xls">
+    📁 Choose File
+    </label>
+
+  <button class="primary" onclick="readExcel()">
+    📊 Load Excel Data
+  </button>
+</div>
+
+<!-- PREVIEW -->
+<div class="card">
+  <h3>Preview Data</h3>
+  <div id="cards"></div>
+</div>
+
+<!-- FINAL UPLOAD -->
+<div class="card">
+  <button class="success" onclick="finalUpload()">
+    🚀 Final Upload to Database
+  </button>
+</div>
+
+</div>
+<!-- POPUP -->
+<div id="popup" style="
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+">
+  <div style="
+    background:#fff;
+    padding:20px;
+    border-radius:16px;
+    width:300px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  ">
+    <div id="popupMsg" style="margin-bottom:15px;font-weight:600;"></div>
+    <button onclick="closePopup()" style="
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      background:#2196f3;
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+    ">OK</button>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/footer.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
+<script>
+let data = [];
+
+/* =========================
+   DATE FIX
+========================= */
+function excelDateToReadable(val) {
+  if (typeof val === "number") {
+    const d = new Date((val - 25569) * 86400 * 1000);
+    return d.toISOString().split("T")[0];
+  }
+  return val;
+}
+
+/* =========================
+   TIME NORMALIZER
+========================= */
+function normalizeTime(val) {
+
+  if (typeof val === "string" && val.includes(":")) {
+    return val.slice(0,5);
+  }
+
+  if (typeof val === "number") {
+    const total = Math.round(val * 24 * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+  }
+
+  return "00:00";
+}
+
+/* =========================
+   HOURS CALC (NO BREAK INPUT)
+========================= */
+function computeHours(amIn, amOut, pmIn, pmOut) {
+
+  function toNum(t){
+    const [h,m] = t.split(":").map(Number);
+    return h + m/60;
+  }
+
+  const total =
+    (toNum(amOut) - toNum(amIn)) +
+    (toNum(pmOut) - toNum(pmIn));
+
+  return Math.max(total, 0);
+}
+
+/* =========================
+   READ EXCEL
+========================= */
+function readExcel() {
+
+  const file = document.getElementById("file").files[0];
+  if (!file) return showPopup("Please select a file");
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+
+    const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+    data = [];
+
+    for (let i = 9; i < rows.length; i++) {
+
+      const r = rows[i];
+      if (!r || !r[0]) continue;
+
+      const date = excelDateToReadable(r[0]);
+
+      const amIn = normalizeTime(r[1]);
+      const pmOut = normalizeTime(r[2]);
+
+      // DEFAULT SPLIT
+      let amOut = "12:00";
+      let pmIn = "13:00";
+
+      data.push({
+        date,
+        amIn,
+        amOut,
+        pmIn,
+        pmOut,
+        daily_accomplishments: r[5] || "",
+        status: r[6] || "Present"
+      });
+    }
+
+    render();
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function validateRow(amIn, amOut, pmIn, pmOut) {
+
+  function toNum(t){
+    const [h,m] = t.split(":").map(Number);
+    return h + m/60;
+  }
+
+  const amStart = toNum(amIn);
+  const amEnd = toNum(amOut);
+  const pmStart = toNum(pmIn);
+  const pmEnd = toNum(pmOut);
+
+  // ❌ INVALID (RED)
+  if (amEnd < amStart || pmEnd < pmStart) {
+    return "error";
+  }
+
+  // 🟡 SUSPICIOUS (YELLOW)
+  if (amEnd > 12 || pmStart < 12) {
+    return "warning";
+  }
+
+  return "ok";
+}
+
+/* =========================
+   VALIDATION
+========================= */
+function validateRow(amIn, amOut, pmIn, pmOut) {
+
+  function toNum(t){
+    const [h,m] = t.split(":").map(Number);
+    return h + m/60;
+  }
+
+  const amStart = toNum(amIn);
+  const amEnd = toNum(amOut);
+  const pmStart = toNum(pmIn);
+  const pmEnd = toNum(pmOut);
+
+  // 🔴 INVALID
+  if (amEnd < amStart || pmEnd < pmStart) {
+    return "error";
+  }
+
+  // 🟡 WARNING
+  if (amEnd > 12 || pmStart < 12) {
+    return "warning";
+  }
+
+  return "ok";
+}
+
+
+/* =========================
+   RENDER
+========================= */
+function render() {
+
+  const c = document.getElementById("cards");
+  c.innerHTML = "";
+
+  data.forEach((d,i) => {
+
+    const hours = computeHours(d.amIn, d.amOut, d.pmIn, d.pmOut);
+    const check = validateRow(d.amIn, d.amOut, d.pmIn, d.pmOut);
+
+    let bg = "#fff";
+    let border = "#e5e5e5";
+    let alertMsg = "";
+
+    // 🟢 OK
+    if (check === "ok") {
+      bg = "#e8f5e9";
+      border = "#4caf50";
+      alertMsg = "✅ Valid record";
+    }
+
+    // 🟡 WARNING
+    if (check === "warning") {
+      bg = "#fff8e1";
+      border = "#fbc02d";
+      alertMsg = "⚠️ Check time split (AM/PM mismatch)";
+    }
+
+    // 🔴 ERROR
+    if (check === "error") {
+      bg = "#ffebee";
+      border = "#f44336";
+      alertMsg = "❌ Invalid time (end before start)";
+    }
+
+    c.innerHTML += `
+      <div style="
+        background:${bg};
+        border:2px solid ${border};
+        border-radius:16px;
+        padding:16px;
+        margin-bottom:14px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      ">
+
+        <b>Date</b><br>
+        <input type="date" value="${d.date}"
+          onchange="data[${i}].date=this.value">
+
+        <br><br>
+
+        <b>AM Session</b><br>
+        <input type="time" value="${d.amIn}"
+          onchange="data[${i}].amIn=this.value; render()">
+        →
+        <input type="time" value="${d.amOut}"
+          onchange="data[${i}].amOut=this.value; render()">
+
+        <br><br>
+
+        <b>PM Session</b><br>
+        <input type="time" value="${d.pmIn}"
+          onchange="data[${i}].pmIn=this.value; render()">
+        →
+        <input type="time" value="${d.pmOut}"
+          onchange="data[${i}].pmOut=this.value; render()">
+
+        <br><br>
+
+        <b>Hours</b><br>
+        <div style="font-weight:800;font-size:16px;">
+          ${hours.toFixed(2)} hrs
+        </div>
+
+        <div style="margin-top:6px;font-size:12px;font-weight:600;">
+          ${alertMsg}
+        </div>
+
+        <br>
+
+        <b>Status</b><br>
+        <select onchange="data[${i}].status=this.value">
+          <option ${d.status==="Present"?"selected":""}>Present</option>
+          <option ${d.status==="Absent"?"selected":""}>Absent</option>
+          <option ${d.status==="Half Day (AM)"?"selected":""}>Half Day (AM)</option>
+          <option ${d.status==="Half Day (PM)"?"selected":""}>Half Day (PM)</option>
+        </select>
+
+        <br><br>
+
+        <b>Accomplishments</b><br>
+        <textarea style="width:100%;height:60px"
+          onchange="data[${i}].daily_accomplishments=this.value">${d.daily_accomplishments}</textarea>
+
+      </div>
+    `;
+  });
+}
+
+async function finalUpload() {
+
+  if (!data.length) {
+    showPopup("No data to upload");
+    return;
+  }
+
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) {
+    showPopup("User not found");
+    return;
+  }
+
+  // ❌ CHECK FOR ERRORS FIRST
+  const hasError = data.some(d =>
+    validateRow(d.amIn, d.amOut, d.pmIn, d.pmOut) === "error"
+  );
+
+  if (hasError) {
+    showPopup("❌ Cannot upload. Please fix all RED (invalid) entries first.");
+    return;
+  }
+
+  try {
+
+    const batch = db.batch();
+
+    data.forEach(d => {
+
+      const recordRef = db.collection("users")
+        .doc(userDocId)
+        .collection("ojt_records")
+        .doc();
+
+      batch.set(recordRef, {
+        date: d.date,
+        am_in: d.amIn,
+        am_out: d.amOut,
+        pm_in: d.pmIn,
+        pm_out: d.pmOut,
+        hours: computeHours(d.amIn, d.amOut, d.pmIn, d.pmOut),
+        status: d.status
+      });
+
+      if (d.daily_accomplishments && d.daily_accomplishments.trim() !== "") {
+
+        const accRef = db.collection("users")
+          .doc(userDocId)
+          .collection("daily_accomplishments")
+          .doc(d.date);
+
+        batch.set(accRef, {
+          date: d.date,
+          text: d.daily_accomplishments,
+          updatedAt: new Date()
+        }, { merge: true });
+      }
+
+    });
+
+    await batch.commit();
+
+    showPopup("✅ Upload complete!");
+    console.log("Uploaded to BOTH collections");
+
+  } catch (err) {
+    console.error(err);
+    showPopup("❌ Upload failed. Check console.");
+  }
+}
+
+function showPopup(msg) {
+  document.getElementById("popupMsg").innerText = msg;
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+</script>
+
+</body>
+</html>

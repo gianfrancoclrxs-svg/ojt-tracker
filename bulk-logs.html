@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bulk Logs</title>
+
+<link rel="stylesheet" href="/assets/css/style.css">
+
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:#f5f6f8;
+}
+
+.container {
+  max-width:480px;
+  margin:auto;
+  padding:20px;
+}
+
+.title {
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:20px;
+}
+
+.card-btn {
+  background:#fff;
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:15px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  cursor:pointer;
+  transition:0.2s;
+  text-align:center;
+  font-weight:700;
+}
+
+.card-btn:hover {
+  transform:scale(1.02);
+}
+
+.manual { border-left:5px solid #4caf50; }
+.excel { border-left:5px solid #2196f3; }
+
+.small {
+  font-size:12px;
+  color:#666;
+  margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">Bulk Upload</div>
+
+  <!-- MANUAL -->
+  <div class="card-btn manual" onclick="location.href='manual.html'">
+    ✍️ Manual Entry
+    <div class="small">Auto-fill smart logging (no repetition fatigue)</div>
+  </div>
+
+  <!-- EXCEL -->
+  <div class="card-btn excel" onclick="location.href='excel.html'">
+    📊 Excel Upload
+    <div class="small">Upload template + review compact cards</div>
+  </div>
+
+</div>
+
+</body>
+</html>

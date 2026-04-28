@@ -1,5 +1,5 @@
 window.APP_CONFIG = {
-  version: "2.2.14",
+  version: "2.3.14",
 
   whatsNew: [
     {
@@ -18,6 +18,14 @@ window.APP_CONFIG = {
         "Hours summary with minutes breakdown",
         "Attendance visualization",
         "Expected completion tracking"
+      ]
+    },
+    {
+      title: "Bulk Upload System introduced (v2.3.14)",
+      details: [
+        "Added manual bulk entry for multiple logs",
+        "Enabled Excel-based bulk upload support",
+        "Improved faster logging workflow for users"
       ]
     },
     {

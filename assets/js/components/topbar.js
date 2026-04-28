@@ -13,6 +13,9 @@ style.textContent = `
     color: #111;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 9999;
 }
 
 body.dark-mode .top-bar {

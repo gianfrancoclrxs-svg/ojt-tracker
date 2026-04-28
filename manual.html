@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Bulk Entry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="/assets/css/style.css">
+
+<style>
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#f5f6f8;
+}
+
+.container {
+  max-width:520px;
+  margin:auto;
+  padding:16px;
+}
+
+/* CARD (MINIMAL SAAS STYLE) */
+.card {
+  position:relative;
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:14px;
+  border:1px solid #eee;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  transition:0.15s;
+}
+
+/* soft hover */
+.card:hover {
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+/* STATUS (SUBTLE, NOT STRIPES) */
+.card.good { outline:2px solid rgba(76,175,80,0.12); }
+.card.warn { outline:2px solid rgba(251,192,45,0.18); }
+.card.bad  { outline:2px solid rgba(244,67,54,0.18); }
+
+/* LABELS */
+.label {
+  font-size:11px;
+  font-weight:700;
+  color:#666;
+  margin:10px 0 4px;
+  letter-spacing:0.4px;
+}
+
+/* INPUTS */
+input, select {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #e5e5e5;
+  background:#fafafa;
+  font-size:14px;
+  outline:none;
+}
+
+input:focus, select:focus {
+  border-color:#bbb;
+  background:#fff;
+}
+
+/* HOURS */
+.hours {
+  margin-top:12px;
+  font-size:13px;
+  font-weight:700;
+  color:#333;
+}
+
+/* DELETE BUTTON (clean floating) */
+.remove-btn {
+  position:absolute;
+  top:10px;
+  right:10px;
+
+  width:26px;
+  height:26px;
+
+  border:none;
+  border-radius:8px;
+
+  background:#111;
+  color:#fff;
+
+  font-size:14px;
+  font-weight:900;
+
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  opacity:0.85;
+}
+
+.remove-btn:hover {
+  opacity:1;
+}
+
+/* BUTTONS */
+button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.add { background:#2196f3; color:#fff; }
+.upload { background:#4caf50; color:#fff; margin-top:10px; }
+
+/* POPUP (FIXED: NEVER SHOWS UNLESS TRIGGERED) */
+#popup {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+
+  display:none;
+  align-items:center;
+  justify-content:center;
+
+  z-index:99999;
+}
+
+/* ANIMATION BOX */
+.popup-box {
+  width:280px;
+  background:#fff;
+  border-radius:18px;
+  padding:22px;
+
+  text-align:center;
+
+  transform:scale(0.85);
+  opacity:0;
+
+  animation:popIn 0.18s ease forwards;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+}
+
+/* ICON */
+.popup-icon {
+  font-size:26px;
+  margin-bottom:10px;
+}
+
+/* MESSAGE */
+.popup-msg {
+  font-size:14px;
+  font-weight:600;
+  color:#222;
+  margin-bottom:16px;
+  line-height:1.4;
+}
+
+/* BUTTON */
+.popup-btn {
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:12px;
+
+  background:#111;
+  color:#fff;
+
+  font-weight:700;
+  cursor:pointer;
+}
+
+/* ANIMATION */
+@keyframes popIn {
+  to {
+    transform:scale(1);
+    opacity:1;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="topBarContainer"></div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-box">
+
+    <div id="popupIcon" class="popup-icon">ℹ️</div>
+
+    <div id="popupMsg" class="popup-msg"></div>
+
+    <button onclick="closePopup()" class="popup-btn">Got it</button>
+
+  </div>
+</div>
+
+<div class="container">
+
+<h2 style="margin-bottom:10px;">Manual Bulk Entry</h2>
+
+<div id="cards"></div>
+
+<button class="add" onclick="addCard()">Add Entry</button>
+<button class="upload" onclick="uploadAll()">Upload All</button>
+
+</div>
+
+<div id="footerContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/components/topbar.js"></script>
+<script src="/assets/js/components/footer.js"></script>
+
+<script>
+let entries = [];
+
+/* =========================
+   POPUP SAFE
+========================= */
+function showPopup(msg, type = "info") {
+
+  const icon = document.getElementById("popupIcon");
+  const text = document.getElementById("popupMsg");
+
+  text.innerText = msg;
+
+  if(type === "success") icon.innerText = "✅";
+  else if(type === "error") icon.innerText = "❌";
+  else if(type === "warning") icon.innerText = "⚠️";
+  else icon.innerText = "ℹ️";
+
+  const popup = document.getElementById("popup");
+  popup.style.display = "flex";
+
+  // restart animation
+  popup.querySelector(".popup-box").style.animation = "none";
+  void popup.querySelector(".popup-box").offsetWidth;
+  popup.querySelector(".popup-box").style.animation = "popIn 0.18s ease forwards";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+/* =========================
+   INIT
+========================= */
+addCard(true);
+
+/* =========================
+   SAFE DATE ADD
+========================= */
+function addCard(first=false){
+
+  let date = new Date();
+
+  if(!first && entries.length){
+    const last = entries[entries.length-1]?.date;
+    const d = new Date(last);
+    if(!isNaN(d.getTime())){
+      d.setDate(d.getDate()+1);
+      date = d;
+    }
+  }
+
+  entries.push({
+    date: date.toISOString().split("T")[0],
+    am_in:"08:00",
+    am_out:"12:00",
+    pm_in:"13:00",
+    pm_out:"17:00",
+    status:"Present",
+    accomplishments:""
+  });
+
+  render();
+}
+
+/* =========================
+   REMOVE
+========================= */
+function removeCard(i){
+  entries.splice(i,1);
+  render();
+}
+
+/* =========================
+   HOURS
+========================= */
+function hours(a,b,c,d){
+  const t=x=>{
+    const [h,m]=x.split(":").map(Number);
+    return h+m/60;
+  };
+  return Math.max((t(b)-t(a))+(t(d)-t(c)),0);
+}
+
+/* =========================
+   ERROR CHECK
+========================= */
+function hasError(){
+  const t=x=>{
+    const [h,m]=x.split(":").map(Number);
+    return h+m/60;
+  };
+  return entries.some(e =>
+    t(e.am_out)<t(e.am_in) ||
+    t(e.pm_out)<t(e.pm_in)
+  );
+}
+
+/* =========================
+   UPDATE
+========================= */
+function update(i, f, v){
+  entries[i][f] = v;
+  render(); 
+}
+
+/* =========================
+   RENDER
+========================= */
+function render(){
+
+  const c=document.getElementById("cards");
+  c.innerHTML="";
+
+  entries.forEach((e,i)=>{
+
+    const t=x=>{
+      const [h,m]=x.split(":").map(Number);
+      return h+m/60;
+    };
+
+    let cls="good";
+
+    if(t(e.am_out)<t(e.am_in)||t(e.pm_out)<t(e.pm_in)) cls="bad";
+    else if(t(e.am_out)>12||t(e.pm_in)<12) cls="warn";
+
+    c.innerHTML+=`
+      <div class="card ${cls}">
+
+        <button class="remove-btn" onclick="removeCard(${i})">×</button>
+
+        <div class="label">DATE</div>
+        <input type="date" value="${e.date}"
+          onchange="update(${i},'date',this.value)">
+
+        <div class="label">AM IN</div>
+        <input type="time" value="${e.am_in}"
+          onchange="update(${i},'am_in',this.value)">
+
+        <div class="label">AM OUT</div>
+        <input type="time" value="${e.am_out}"
+          onchange="update(${i},'am_out',this.value)">
+
+        <div class="label">PM IN</div>
+        <input type="time" value="${e.pm_in}"
+          onchange="update(${i},'pm_in',this.value)">
+
+        <div class="label">PM OUT</div>
+        <input type="time" value="${e.pm_out}"
+          onchange="update(${i},'pm_out',this.value)">
+
+        <div class="label">STATUS</div>
+        <select onchange="update(${i},'status',this.value)">
+          <option ${e.status==='Present'?'selected':''}>Present</option>
+          <option>Absent</option>
+          <option>Half Day (AM)</option>
+          <option>Half Day (PM)</option>
+        </select>
+
+        <div class="label">ACCOMPLISHMENTS</div>
+        <input value="${e.accomplishments}"
+          onchange="update(${i},'accomplishments',this.value)">
+
+        <div class="hours">
+          ${hours(e.am_in,e.am_out,e.pm_in,e.pm_out).toFixed(2)} hrs
+        </div>
+
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   UPLOAD
+========================= */
+async function uploadAll(){
+
+  const userDocId = localStorage.getItem("userDocId");
+
+  if(!userDocId){
+    showPopup("User not found");
+    return;
+  }
+
+  // ❌ BLOCK IF INVALID ENTRIES EXIST
+  if(hasError()){
+    showPopup("❌ Fix invalid entries first");
+    return;
+  }
+
+  try{
+
+    const batch = db.batch();
+
+    entries.forEach(e => {
+
+      // ========================
+      // MAIN OJT RECORDS
+      // ========================
+      const ref = db.collection("users")
+        .doc(userDocId)
+        .collection("ojt_records")
+        .doc();
+
+      batch.set(ref,{
+        date: e.date,
+        am_in: e.am_in,
+        am_out: e.am_out,
+        pm_in: e.pm_in,
+        pm_out: e.pm_out,
+        status: e.status,
+        hours: hours(e.am_in,e.am_out,e.pm_in,e.pm_out)
+      });
+
+      // ========================
+      // DAILY ACCOMPLISHMENTS
+      // ========================
+      if(e.accomplishments && e.accomplishments.trim() !== ""){
+
+        const accRef = db.collection("users")
+          .doc(userDocId)
+          .collection("daily_accomplishments")
+          .doc(e.date);
+
+        batch.set(accRef,{
+          date: e.date,
+          text: e.accomplishments,
+          updatedAt: new Date()
+        }, { merge: true });
+      }
+
+    });
+
+    await batch.commit();
+
+    showPopup("✅ Upload successful!");
+
+    entries = [];
+    addCard(true);
+
+  } catch(err){
+    console.error(err);
+    showPopup("❌ Upload failed");
+  }
+}
+</script>
+
+</body>
+</html>
