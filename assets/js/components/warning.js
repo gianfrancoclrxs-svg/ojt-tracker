@@ -71,7 +71,7 @@
 
     The application has reached its daily free usage limit and may experience delays or temporary issues when loading or saving records.
 
-    • Reads used: 53,000 / 50,000 limit exceeded  
+    • Reads have already exceeded the 50K limit. 
     • Over quota: +3,400 reads  
     • Status: No-cost quota fully consumed  
     • Plan: Free plan only  

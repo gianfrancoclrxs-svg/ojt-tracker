@@ -1,5 +1,5 @@
 window.APP_CONFIG = {
-  version: "2.2.13",
+  version: "2.2.14",
 
   whatsNew: [
     {

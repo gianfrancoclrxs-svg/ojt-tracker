@@ -170,8 +170,8 @@ body.dark-mode hr {
   <div class="card">
     <h3>Edit OJT Info</h3>
 
-    <input type="text" id="editLocation" placeholder="OJT Location / Company Name">
-    <input type="text" id="editAddress" placeholder="OJT Address / Company Address">
+    <input type="text" id="editLocation" placeholder="Company Name">
+    <input type="text" id="editAddress" placeholder="Company Address">
     <input type="number" id="editTargetHours" placeholder="Target Hours">
 
     <button id="saveOjtSettingsBtn">Save Changes</button>
@@ -238,7 +238,6 @@ body.dark-mode hr {
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/components/footer.js"></script>
 <script src="/assets/js/components/topbar.js"></script>
-
 <script>
 window.addEventListener("DOMContentLoaded", () => {
 
@@ -256,12 +255,9 @@ window.addEventListener("DOMContentLoaded", () => {
     window.APP_CONFIG.whatsNew.forEach(item => {
       const li = document.createElement("li");
 
-      // OLD FORMAT SUPPORT (string)
       if (typeof item === "string") {
         li.textContent = item;
-      } 
-      // NEW FORMAT (object)
-      else {
+      } else {
         li.textContent = item.title;
 
         if (item.details && item.details.length) {
@@ -328,8 +324,15 @@ window.addEventListener("DOMContentLoaded", () => {
     const userDocId = localStorage.getItem("userDocId");
     if (!userDocId) return;
 
-    const doc = await db.collection("users").doc(userDocId).get();
-    if (!doc.exists) return;
+    console.log("Loading userDocId:", userDocId); // ✅ DEBUG
+
+    const docRef = db.collection("users").doc(userDocId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      console.warn("User doc does not exist:", userDocId);
+      return;
+    }
 
     const data = doc.data();
 
@@ -351,16 +354,31 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
+
       const userDocId = localStorage.getItem("userDocId");
-      if (!userDocId) return;
+      if (!userDocId) return alert("No user session found.");
 
-      await db.collection("users").doc(userDocId).update({
-        ojt_location: document.getElementById("editLocation")?.value || "",
-        ojt_address: document.getElementById("editAddress")?.value || "",
+      console.log("Updating userDocId:", userDocId); // ✅ DEBUG
+
+      const docRef = db.collection("users").doc(userDocId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        console.error("User doc missing. Preventing duplicate creation.");
+        return alert("User record not found. Please login again.");
+      }
+
+      const updatedData = {
+        ojt_location: document.getElementById("editLocation")?.value.trim() || "",
+        ojt_address: document.getElementById("editAddress")?.value.trim() || "",
         target_hours: parseFloat(document.getElementById("editTargetHours")?.value || 0)
-      });
+      };
 
-      alert("Updated!");
+      await docRef.update(updatedData);
+
+      console.log("Updated data:", updatedData); // ✅ DEBUG
+
+      alert("Updated successfully!");
     });
   }
 

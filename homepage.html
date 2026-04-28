@@ -28,7 +28,6 @@
   background: rgba(0,0,0,0.5);
 }
 
-/* ================= POPUP BOX ================= */
 #accomModalBox {
   position: relative;
   width: 90%;
@@ -46,7 +45,6 @@
   box-sizing: border-box;
 }
 
-/* ================= TEXTAREA FIX ================= */
 #accomModalBox textarea {
   width: 100%;
   max-width: 100%;
@@ -67,7 +65,6 @@
   display: block;
 }
 
-/* ================= ACTIONS ================= */
 .accom-actions {
   display: flex;
   justify-content: flex-end;
@@ -83,7 +80,6 @@
   font-weight: 700;
 }
 
-/* ================= BUTTONS ================= */
 #accomCancel {
   background: #eee;
 }
@@ -93,7 +89,6 @@
   color: white;
 }
 
-/* ================= MOBILE FIX ================= */
 @media (max-width: 480px) {
   #accomModalBox {
     margin: 80px auto;
@@ -109,13 +104,11 @@
   width: 100%;
 }
 
-/* PRIMARY (Add/Edit) */
 #editAccomplishmentBtn {
   background: #4caf50;
   color: white;
 }
 
-/* SECONDARY (History) */
 #viewAccomplishmentHistoryBtn {
   background: #2196f3;
   color: white;
@@ -171,7 +164,6 @@
 </div>
 
 
-  <!-- 👇 ADD THIS BELOW ringCard -->
 <div class="card" id="todayAccomplishmentCard">
   <h3>Today's Accomplishment</h3>
 
@@ -215,7 +207,7 @@
 </div>
 
 </div>
-<script src="/assets/js/components/warning.js"></script>
+<!-- <script src="/assets/js/components/warning.js"></script> -->
 <script src="/assets/js/components/accomplishment.js"></script>
 <script src="/assets/js/config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -242,6 +234,35 @@
     checkWhatsNew();
     
   });
+
+  async function checkOjtSetup() {
+  const userDocId = localStorage.getItem("userDocId");
+  if (!userDocId) return;
+
+  const doc = await db.collection("users").doc(userDocId).get();
+  if (!doc.exists) return;
+
+  const data = doc.data();
+
+  if (!data.ojt_location || !data.target_hours) {
+    document.getElementById("ojtPopup").style.display = "flex";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (
+    localStorage.getItem("loggedIn") !== "true" ||
+    !localStorage.getItem("userDocId")
+  ) {
+    location.href = "index.html";
+    return;
+  }
+
+  await updateGreetingCard();
+  await checkOjtSetup(); 
+
+  checkWhatsNew();
+});
 </script>
 <script src="/assets/js/components/footer.js"></script>
 <script src="/assets/js/components/topbar.js"></script>
