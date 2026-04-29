@@ -233,7 +233,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     let milestone = "Starting out";
     let color = "#f44336";
 
-    if (percent >= 75) {
+    if (percent >= 100) {
+      milestone = "Completed!";
+      color = "#4caf50";
+    } else if (percent >= 75) {
       milestone = "Almost Complete";
       color = "#4caf50";
     } else if (percent >= 50) {

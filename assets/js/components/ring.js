@@ -162,26 +162,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setTimeout(() => animate(), DASH_ANIM_DELAY);
 
-  // ================= MILESTONE =================
-  const milestoneEl = document.getElementById("milestoneText");
+// ================= MILESTONE =================
+const milestoneEl = document.getElementById("milestoneText");
 
-  let milestone = "Starting out";
-  let color = "#f44336";
+let milestone = "Starting out";
+let color = "#f44336";
 
-  if (targetPercent >= 75) {
-    milestone = "Almost Complete";
-    color = "#4caf50";
-  } else if (targetPercent >= 50) {
-    milestone = "In Progress";
-    color = "#ffb300";
-  } else if (targetPercent >= 25) {
-    milestone = "Getting Started";
-    color = "#ff7043";
-  }
+if (targetPercent >= 100) {
+  milestone = "Completed!";
+  color = "#4caf50"; 
+} else if (targetPercent >= 75) {
+  milestone = "Almost Complete";
+  color = "#4caf50"; 
+} else if (targetPercent >= 50) {
+  milestone = "In Progress";
+  color = "#ffb300";
+} else if (targetPercent >= 25) {
+  milestone = "Getting Started";
+  color = "#ff7043";
+}
 
-  milestoneEl.textContent = milestone;
-  milestoneEl.style.color = color;
-  milestoneEl.style.fontWeight = "800";
+milestoneEl.textContent = milestone;
+milestoneEl.style.color = color;
+milestoneEl.style.fontWeight = "800";
 
 });
 
