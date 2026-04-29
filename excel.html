@@ -188,6 +188,25 @@ input[type="file"] {
 <script src="/assets/js/components/footer.js"></script>
 <script src="/assets/js/components/topbar.js"></script>
 <script>
+  function downloadTemplate() {
+  const fileUrl = "./assets/OJT-Template-Bulk-Logging.xlsx";
+
+  const link = document.createElement("a");
+  link.href = fileUrl;
+  link.setAttribute("download", "OJT-Template-Bulk-Logging.xlsx");
+
+  document.body.appendChild(link);
+
+  try {
+    link.click();
+  } catch (e) {
+    window.open(fileUrl, "_blank"); 
+  }
+
+  document.body.removeChild(link);
+}
+</script>
+<script>
 let data = [];
 
 /* =========================
@@ -265,7 +284,6 @@ function readExcel() {
       const amIn = normalizeTime(r[1]);
       const pmOut = normalizeTime(r[2]);
 
-      // DEFAULT SPLIT
       let amOut = "12:00";
       let pmIn = "13:00";
 
@@ -298,12 +316,10 @@ function validateRow(amIn, amOut, pmIn, pmOut) {
   const pmStart = toNum(pmIn);
   const pmEnd = toNum(pmOut);
 
-  // ❌ INVALID (RED)
   if (amEnd < amStart || pmEnd < pmStart) {
     return "error";
   }
 
-  // 🟡 SUSPICIOUS (YELLOW)
   if (amEnd > 12 || pmStart < 12) {
     return "warning";
   }
@@ -326,12 +342,10 @@ function validateRow(amIn, amOut, pmIn, pmOut) {
   const pmStart = toNum(pmIn);
   const pmEnd = toNum(pmOut);
 
-  // 🔴 INVALID
   if (amEnd < amStart || pmEnd < pmStart) {
     return "error";
   }
 
-  // 🟡 WARNING
   if (amEnd > 12 || pmStart < 12) {
     return "warning";
   }
@@ -357,21 +371,18 @@ function render() {
     let border = "#e5e5e5";
     let alertMsg = "";
 
-    // 🟢 OK
     if (check === "ok") {
       bg = "#e8f5e9";
       border = "#4caf50";
       alertMsg = "✅ Valid record";
     }
 
-    // 🟡 WARNING
     if (check === "warning") {
       bg = "#fff8e1";
       border = "#fbc02d";
       alertMsg = "⚠️ Check time split (AM/PM mismatch)";
     }
 
-    // 🔴 ERROR
     if (check === "error") {
       bg = "#ffebee";
       border = "#f44336";
