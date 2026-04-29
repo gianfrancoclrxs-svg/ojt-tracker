@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userDocId = localStorage.getItem("userDocId");
   if (!userDocId) return;
 
-  // ================= THEME =================
   const isDarkMode = () => document.body.classList.contains("dark-mode");
 
   const getTheme = () => ({
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     border: isDarkMode() ? "#333" : "#e5e5e5"
   });
 
-  // ================= ELEMENTS =================
   const card = document.getElementById("todayAccomplishmentCard");
   const textEl = document.getElementById("todayAccomplishmentText");
 
@@ -31,7 +29,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const today = () => new Date().toISOString().split("T")[0];
 
-  // ================= APPLY THEME =================
   const applyTheme = () => {
     const t = getTheme();
 
@@ -85,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     attributeFilter: ["class"]
   });
 
-  // ================= LOAD =================
   async function loadAccomplishment(date = today()) {
 
     const doc = await db.collection("users")
@@ -101,7 +97,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ================= MODAL =================
   function openModal(text = "") {
     input.value = text === "No accomplishment yet" ? "" : text;
     dateInput.value = today();
@@ -112,23 +107,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     modal.style.display = "none";
   }
 
-  // ================= EVENTS =================
-
-  // EDIT BUTTON
   btn?.addEventListener("click", () => {
     openModal(textEl.textContent);
   });
 
-  // HISTORY BUTTON
   historyBtn?.addEventListener("click", () => {
     window.location.href = "accomplishment.html";
   });
 
-  // CLOSE MODAL
   cancelBtn?.addEventListener("click", closeModal);
   overlay?.addEventListener("click", closeModal);
 
-  // SAVE
   saveBtn?.addEventListener("click", async () => {
 
     const value = input.value.trim();
@@ -156,7 +145,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadAccomplishment(selectedDate);
   });
 
-  // ================= INIT =================
   setTimeout(() => {
     loadAccomplishment();
   }, ACC_ANIM_DELAY);

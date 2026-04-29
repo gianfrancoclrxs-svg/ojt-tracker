@@ -1,15 +1,9 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // ================= INIT =================
-  // runs only when DOM is fully loaded
   const userDocId = localStorage.getItem("userDocId");
 
-  // IMPORTANT:
-  // no userDocId = no dashboard logic (prevents crash + useless DB calls)
   if (!userDocId) return;
 
-  // ================= STYLES (DYNAMIC UI PATCH) =================
-  // injecting dashboard styles directly via JS (no external CSS needed for this section)
   const style = document.createElement("style");
 
 style.textContent = `
@@ -90,14 +84,11 @@ style.textContent = `
 
   document.head.appendChild(style);
 
-  // ================= FIREBASE USER FETCH =================
-  // getting user data from Firestore
   const userDoc = await db.collection("users").doc(userDocId).get();
   const data = userDoc.data();
 
   const { total } = await getTotalRecordedHours(userDocId);
 
-  // ================= PROGRESS CALCULATION =================
   const target = Number(data.target_hours || 0);
   const remaining = Math.max(target - total, 0);
   const progress = target > 0 ? (total / target) * 100 : 0;
@@ -105,8 +96,6 @@ style.textContent = `
   const hoursPerDay = 8;
   const daysNeeded = Math.ceil(remaining / hoursPerDay);
 
-  // IMPORTANT:
-  // assumes 8-hour workdays (change here if company rules differ)
   function addWorkDays(start, days) {
     let d = new Date(start);
 
@@ -114,7 +103,6 @@ style.textContent = `
       d.setDate(d.getDate() + 1);
       const day = d.getDay();
 
-      // skip weekends (Sat + Sun)
       if (day !== 0 && day !== 6) days--;
     }
 
@@ -129,8 +117,6 @@ style.textContent = `
     day: "numeric"
   });
 
-  // ================= STATUS ENGINE =================
-  // determines user progress state (basically mood of the dashboard 😄)
   let statusText = "";
   let statusColor = "#4caf50";
 
@@ -169,16 +155,12 @@ style.textContent = `
     </div>
   `;
 
-  // ================= TIME PARSING HELPERS =================
-  // converts "08:30" → minutes
   function safeParse(t) {
     if (!t || !t.includes(":")) return 0;
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
   }
 
-  // ================= LAST 9 DAYS GENERATOR =================
-  // used for burnout + activity pattern tracking
   function getLast9DaysExcludingToday() {
     const arr = [];
     const today = new Date();
@@ -202,7 +184,6 @@ style.textContent = `
 
   const daysWindow = getLast9DaysExcludingToday();
 
-  // ================= FIRESTORE LOG FETCH =================
   const snap = await db.collection("users")
     .doc(userDocId)
     .collection("ojt_records")
@@ -240,7 +221,6 @@ style.textContent = `
     };
   });
 
-  // ================= BURNOUT ANALYTICS ENGINE =================
   const heavy = grid.filter(d => d.hours >= 9).length;
   const normal = grid.filter(d => d.hours >= 6 && d.hours < 9).length;
   const light = grid.filter(d => d.hours > 0 && d.hours < 6).length;
@@ -264,8 +244,6 @@ style.textContent = `
     insight = "Your consistency is stable";
   }
 
-  // ================= UI DOT GENERATION =================
-  // visual representation of activity per day
   const dots = grid.map(d => {
 
     let color = "#bdbdbd";

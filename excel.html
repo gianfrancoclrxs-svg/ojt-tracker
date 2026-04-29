@@ -26,21 +26,18 @@ body {
   color:var(--text);
 }
 
-/* TOPBAR */
 #topBarContainer {
   position: sticky;
   top: 0;
   z-index: 999;
 }
 
-/* CONTAINER */
 .container {
   max-width:480px;
   margin:auto;
   padding:16px;
 }
 
-/* CARD */
 .card {
   background:var(--card);
   padding:14px;
@@ -50,7 +47,6 @@ body {
   box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
-/* BUTTONS */
 button {
   width:100%;
   padding:12px;
@@ -73,7 +69,6 @@ input[type="file"] {
   background:#fff;
 }
 
-/* PREVIEW */
 .card-item {
   padding:12px;
   border-radius:12px;
@@ -107,7 +102,6 @@ input[type="file"] {
   background:#f2f2f2;
 }
 
-/* hide default input */
 .file-btn input {
   display:none;
 }
@@ -143,7 +137,6 @@ input[type="file"] {
   <div id="cards"></div>
 </div>
 
-<!-- FINAL UPLOAD -->
 <div class="card">
   <button class="success" onclick="finalUpload()">
     🚀 Final Upload to Database
@@ -151,7 +144,6 @@ input[type="file"] {
 </div>
 
 </div>
-<!-- POPUP -->
 <div id="popup" style="
   position:fixed;
   top:0;left:0;
@@ -209,9 +201,6 @@ input[type="file"] {
 <script>
 let data = [];
 
-/* =========================
-   DATE FIX
-========================= */
 function excelDateToReadable(val) {
   if (typeof val === "number") {
     const d = new Date((val - 25569) * 86400 * 1000);
@@ -220,9 +209,6 @@ function excelDateToReadable(val) {
   return val;
 }
 
-/* =========================
-   TIME NORMALIZER
-========================= */
 function normalizeTime(val) {
 
   if (typeof val === "string" && val.includes(":")) {
@@ -239,9 +225,6 @@ function normalizeTime(val) {
   return "00:00";
 }
 
-/* =========================
-   HOURS CALC (NO BREAK INPUT)
-========================= */
 function computeHours(amIn, amOut, pmIn, pmOut) {
 
   function toNum(t){
@@ -256,9 +239,6 @@ function computeHours(amIn, amOut, pmIn, pmOut) {
   return Math.max(total, 0);
 }
 
-/* =========================
-   READ EXCEL
-========================= */
 function readExcel() {
 
   const file = document.getElementById("file").files[0];
@@ -327,9 +307,6 @@ function validateRow(amIn, amOut, pmIn, pmOut) {
   return "ok";
 }
 
-/* =========================
-   VALIDATION
-========================= */
 function validateRow(amIn, amOut, pmIn, pmOut) {
 
   function toNum(t){
@@ -354,9 +331,6 @@ function validateRow(amIn, amOut, pmIn, pmOut) {
 }
 
 
-/* =========================
-   RENDER
-========================= */
 function render() {
 
   const c = document.getElementById("cards");
@@ -466,7 +440,6 @@ async function finalUpload() {
     return;
   }
 
-  // ❌ CHECK FOR ERRORS FIRST
   const hasError = data.some(d =>
     validateRow(d.amIn, d.amOut, d.pmIn, d.pmOut) === "error"
   );

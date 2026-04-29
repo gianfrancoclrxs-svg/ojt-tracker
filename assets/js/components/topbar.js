@@ -1,4 +1,3 @@
-// ================= STYLE =================
 const style = document.createElement("style");
 
 style.textContent = `
@@ -46,7 +45,6 @@ body.dark-mode .top-bar {
 
 document.head.appendChild(style);
 
-// ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
 
 const container = document.getElementById("topBarContainer");
@@ -55,15 +53,12 @@ if (!container) return;
 const topBar = document.createElement("div");
 topBar.className = "top-bar";
 
-// ================= SAFE PAGE CHECK =================
 const page = window.location.pathname.split("/").pop().split("?")[0];
 const isHome = page === "homepage.html" || page === "index.html";
 
-// ================= LEFT =================
 const left = document.createElement("div");
 left.className = "left-side";
 
-// BACK BUTTON (ALL NON-HOME PAGES)
 if (!isHome) {
 
     const back = document.createElement("i");
@@ -77,7 +72,6 @@ if (!isHome) {
 } else {
 }
 
-// ================= CENTER =================
 const center = document.createElement("div");
 center.className = "center-title";
 
@@ -86,14 +80,11 @@ title.textContent = "OJT Tracker";
 
 center.appendChild(title);
 
-// ================= RIGHT =================
 const right = document.createElement("div");
 right.className = "right-side";
 
-// ================= HOME ONLY FEATURES =================
 if (isHome) {
 
-    // SETTINGS
     const settings = document.createElement("i");
     settings.className = "fa-solid fa-gear icon";
 
@@ -101,7 +92,6 @@ if (isHome) {
         window.location.href = "settings.html";
     };
 
-    // DARK MODE
     const mode = document.createElement("i");
     mode.className = "icon";
 
@@ -129,7 +119,6 @@ if (isHome) {
     right.appendChild(mode);
 }
 
-// ================= ASSEMBLE =================
 topBar.appendChild(left);
 topBar.appendChild(center);
 topBar.appendChild(right);

@@ -20,7 +20,6 @@ body {
   padding:16px;
 }
 
-/* CARD (MINIMAL SAAS STYLE) */
 .card {
   position:relative;
   background:#fff;
@@ -32,18 +31,15 @@ body {
   transition:0.15s;
 }
 
-/* soft hover */
 .card:hover {
   transform:translateY(-1px);
   box-shadow:0 4px 14px rgba(0,0,0,0.08);
 }
 
-/* STATUS (SUBTLE, NOT STRIPES) */
 .card.good { outline:2px solid rgba(76,175,80,0.12); }
 .card.warn { outline:2px solid rgba(251,192,45,0.18); }
 .card.bad  { outline:2px solid rgba(244,67,54,0.18); }
 
-/* LABELS */
 .label {
   font-size:11px;
   font-weight:700;
@@ -52,7 +48,6 @@ body {
   letter-spacing:0.4px;
 }
 
-/* INPUTS */
 input, select {
   width:100%;
   padding:10px;
@@ -68,7 +63,6 @@ input:focus, select:focus {
   background:#fff;
 }
 
-/* HOURS */
 .hours {
   margin-top:12px;
   font-size:13px;
@@ -76,7 +70,6 @@ input:focus, select:focus {
   color:#333;
 }
 
-/* DELETE BUTTON (clean floating) */
 .remove-btn {
   position:absolute;
   top:10px;
@@ -107,7 +100,6 @@ input:focus, select:focus {
   opacity:1;
 }
 
-/* BUTTONS */
 button {
   width:100%;
   padding:12px;
@@ -120,7 +112,6 @@ button {
 .add { background:#2196f3; color:#fff; }
 .upload { background:#4caf50; color:#fff; margin-top:10px; }
 
-/* POPUP (FIXED: NEVER SHOWS UNLESS TRIGGERED) */
 #popup {
   position:fixed;
   inset:0;
@@ -134,7 +125,6 @@ button {
   z-index:99999;
 }
 
-/* ANIMATION BOX */
 .popup-box {
   width:280px;
   background:#fff;
@@ -150,13 +140,11 @@ button {
   box-shadow:0 20px 60px rgba(0,0,0,0.25);
 }
 
-/* ICON */
 .popup-icon {
   font-size:26px;
   margin-bottom:10px;
 }
 
-/* MESSAGE */
 .popup-msg {
   font-size:14px;
   font-weight:600;
@@ -165,7 +153,6 @@ button {
   line-height:1.4;
 }
 
-/* BUTTON */
 .popup-btn {
   width:100%;
   padding:10px;
@@ -179,7 +166,6 @@ button {
   cursor:pointer;
 }
 
-/* ANIMATION */
 @keyframes popIn {
   to {
     transform:scale(1);
@@ -228,9 +214,6 @@ button {
 <script>
 let entries = [];
 
-/* =========================
-   POPUP SAFE
-========================= */
 function showPopup(msg, type = "info") {
 
   const icon = document.getElementById("popupIcon");
@@ -256,14 +239,8 @@ function closePopup() {
   document.getElementById("popup").style.display = "none";
 }
 
-/* =========================
-   INIT
-========================= */
 addCard(true);
 
-/* =========================
-   SAFE DATE ADD
-========================= */
 function addCard(first=false){
 
   let date = new Date();
@@ -290,17 +267,11 @@ function addCard(first=false){
   render();
 }
 
-/* =========================
-   REMOVE
-========================= */
 function removeCard(i){
   entries.splice(i,1);
   render();
 }
 
-/* =========================
-   HOURS
-========================= */
 function hours(a,b,c,d){
   const t=x=>{
     const [h,m]=x.split(":").map(Number);
@@ -309,9 +280,6 @@ function hours(a,b,c,d){
   return Math.max((t(b)-t(a))+(t(d)-t(c)),0);
 }
 
-/* =========================
-   ERROR CHECK
-========================= */
 function hasError(){
   const t=x=>{
     const [h,m]=x.split(":").map(Number);
@@ -323,17 +291,11 @@ function hasError(){
   );
 }
 
-/* =========================
-   UPDATE
-========================= */
 function update(i, f, v){
   entries[i][f] = v;
   render(); 
 }
 
-/* =========================
-   RENDER
-========================= */
 function render(){
 
   const c=document.getElementById("cards");
@@ -397,9 +359,6 @@ function render(){
   });
 }
 
-/* =========================
-   UPLOAD
-========================= */
 async function uploadAll(){
 
   const userDocId = localStorage.getItem("userDocId");
@@ -409,7 +368,6 @@ async function uploadAll(){
     return;
   }
 
-  // ❌ BLOCK IF INVALID ENTRIES EXIST
   if(hasError()){
     showPopup("❌ Fix invalid entries first");
     return;
@@ -421,9 +379,6 @@ async function uploadAll(){
 
     entries.forEach(e => {
 
-      // ========================
-      // MAIN OJT RECORDS
-      // ========================
       const ref = db.collection("users")
         .doc(userDocId)
         .collection("ojt_records")
@@ -439,9 +394,6 @@ async function uploadAll(){
         hours: hours(e.am_in,e.am_out,e.pm_in,e.pm_out)
       });
 
-      // ========================
-      // DAILY ACCOMPLISHMENTS
-      // ========================
       if(e.accomplishments && e.accomplishments.trim() !== ""){
 
         const accRef = db.collection("users")

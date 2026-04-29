@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userDocId = localStorage.getItem("userDocId");
   if (!userDocId) return;
 
-  // ================= THEME HELPER =================
   const isDarkMode = () => document.body.classList.contains("dark-mode");
 
   const getTheme = () => ({
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     ringBg: isDarkMode() ? "#333" : "#e6e6e6"
   });
 
-  // ================= ELEMENTS =================
   const card = document.querySelector(".ojt-progress-card");
   const wrapper = document.querySelector(".ring-wrapper");
   const ring = document.querySelector(".ring-fill");
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const applyTheme = () => {
     const t = getTheme();
 
-    // ================= CARD =================
     card.style.width = "100%";
     card.style.maxWidth = "480px";
     card.style.margin = "16px auto";
@@ -45,35 +42,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     card.style.justifyContent = "space-between";
     card.style.gap = "30px";
 
-    // ================= INFO TEXT =================
     info.querySelectorAll("p").forEach(p => {
       p.style.fontWeight = "700";
       p.style.color = t.text;
       p.style.margin = "2px 0";
     });
 
-    // ================= RING COLORS (IMPORTANT FIX) =================
-    bg.style.stroke = t.ringBg;   // gray track stays visible
-    bg.style.fill = "none";       // prevents black fill bug
-    ring.style.fill = "none";     // prevents black center issue
+    bg.style.stroke = t.ringBg;  
+    bg.style.fill = "none";
+    ring.style.fill = "none";
   };
 
   applyTheme();
 
-  // auto reapply when theme changes
   const observer = new MutationObserver(applyTheme);
   observer.observe(document.body, {
     attributes: true,
     attributeFilter: ["class"]
   });
 
-  // ================= WRAPPER =================
   wrapper.style.position = "relative";
   wrapper.style.width = "120px";
   wrapper.style.height = "120px";
   wrapper.style.flexShrink = "0";
 
-  // ================= INFO =================
   info.style.display = "flex";
   info.style.flexDirection = "column";
   info.style.gap = "2px";
@@ -83,7 +75,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   info.style.alignItems = "flex-start"; 
   info.style.textAlign = "left";  
 
-  // ================= SVG RING =================
   ring.style.fill = "none";
   ring.style.strokeWidth = "18";
   ring.style.strokeLinecap = "round";
@@ -97,7 +88,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const svg = document.querySelector(".progress-ring");
   svg.style.transform = "rotate(90deg) scaleX(-1)";
 
-  // ================= CENTER PERCENT =================
   percentEl.style.position = "absolute";
   percentEl.style.top = "50%";
   percentEl.style.left = "50%";
@@ -106,7 +96,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   percentEl.style.fontWeight = "900";
   percentEl.style.pointerEvents = "none";
 
-  // ================= DATA =================
   const { total, absentCount } = await getTotalRecordedHours(userDocId);
 
   const userDoc = await db.collection("users").doc(userDocId).get();
@@ -137,7 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("hoursText").textContent =
     `${Math.floor(totalHours)} / ${requiredHours} hrs`;
 
-  // ================= ANIMATION =================
   let progress = 0;
 
   const animate = () => {
@@ -162,7 +150,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setTimeout(() => animate(), DASH_ANIM_DELAY);
 
-// ================= MILESTONE =================
 const milestoneEl = document.getElementById("milestoneText");
 
 let milestone = "Starting out";

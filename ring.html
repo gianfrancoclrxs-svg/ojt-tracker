@@ -84,7 +84,6 @@ body {
   color: var(--muted);
 }
 
-/* modal */
 #lateModal {
   display:none;
   position:fixed;
@@ -192,7 +191,6 @@ body {
   </div>
 </div>
 
-<!-- SCRIPTS -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -215,7 +213,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   ring.style.strokeDasharray = circumference;
   ring.style.strokeDashoffset = circumference;
 
-  // ================= MAIN FUNCTION =================
   async function loadDashboard() {
 
     const userDoc = await db.collection("users").doc(userDocId).get();
@@ -229,7 +226,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const percent = Math.min((totalHours / requiredHours) * 100, 100);
 
-    // ================= MILESTONE =================
     let milestone = "Starting out";
     let color = "#f44336";
 
@@ -261,7 +257,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("leftHours").textContent =
       `${Math.floor(left)}h ${Math.round((left % 1) * 60)}m`;
 
-    // ================= ANIMATION =================
     let progress = 0;
 
     function animate() {
@@ -278,7 +273,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     animate();
 
-    // ================= ATTENDANCE =================
     const snapshot = await db.collection("users")
       .doc(userDocId)
       .collection("ojt_records")
@@ -326,7 +320,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("absentDays").textContent = absent;
     document.getElementById("lateDays").textContent = late;
 
-    // ================= EXPECTED =================
     const dailyAvg = totalHours / Math.max(present + half, 1);
     const remainingDays = Math.ceil(left / Math.max(dailyAvg, 1));
 
@@ -381,10 +374,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     `;
   }
 
-  // initial load
   loadDashboard();
 
-  // ================= MODAL =================
   const editBtn = document.getElementById("editLateBtn");
   const modal = document.getElementById("lateModal");
   const saveBtn = document.getElementById("saveLateBtn");
@@ -402,7 +393,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     modal.style.display = "none";
 
-    // 🔥 AUTO REFRESH EVERYTHING
     loadDashboard();
   });
 

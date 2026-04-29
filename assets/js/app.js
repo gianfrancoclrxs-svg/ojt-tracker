@@ -1,9 +1,4 @@
 
-// ===============================
-// FIREBASE INIT
-// ===============================
-// IMPORTANT:
-// if this fails, EVERYTHING below will break silently
 const firebaseConfig = {
   apiKey: "SECRETT",
   authDomain: "ojttracking-2d004.firebaseapp.com",
@@ -12,12 +7,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-
-// ===============================
-// AUTH UI TOGGLE (LOGIN / SIGNUP)
-// ===============================
-// simple UI switch between forms (no backend logic here)
 
 document.getElementById("showSignUp")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
@@ -29,12 +18,6 @@ document.getElementById("showLogin")?.addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "block";
 });
 
-
-// ===============================
-// SIGN UP FLOW
-// ===============================
-// creates user document in Firestore + stores session locally
-
 document.getElementById("signUpBtn")?.addEventListener("click", async () => {
 
   const fullName = document.getElementById("fullName").value.trim();
@@ -45,8 +28,6 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   if (!fullName || !username || !email || !studentId)
     return alert("Fill all fields");
 
-  // IMPORTANT:
-  // username uniqueness check (basic but works for student app scale)
   const existing = await db.collection("users")
     .where("username", "==", username)
     .get();
@@ -69,12 +50,6 @@ document.getElementById("signUpBtn")?.addEventListener("click", async () => {
   window.location.href = "./homepage.html";
 });
 
-
-// ===============================
-// LOGIN FLOW
-// ===============================
-// matches username + student ID (simple auth system)
-
 document.getElementById("loginBtn")?.addEventListener("click", async () => {
 
   const username = document.getElementById("loginUsername").value.trim();
@@ -96,23 +71,54 @@ document.getElementById("loginBtn")?.addEventListener("click", async () => {
   window.location.href = "./homepage.html";
 });
 
+document.addEventListener("DOMContentLoaded", () => {
 
-// ===============================
-// TIME HELPERS
-// ===============================
-// converts "HH:MM" → decimal hours
+  const saveBtn = document.getElementById("saveOjtBtn");
+
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener("click", async () => {
+
+    const company = document.getElementById("ojtCompanyName").value.trim();
+    const address = document.getElementById("ojtAddress").value.trim();
+    const target = document.getElementById("targetHours").value;
+
+    const userDocId = localStorage.getItem("userDocId");
+
+    if (!company || !target) {
+      alert("Please fill required fields");
+      return;
+    }
+
+    try {
+      await db.collection("users")
+        .doc(userDocId)
+        .update({
+          ojt_location: company,
+          ojt_address: address,
+          target_hours: Number(target)
+        });
+
+      document.getElementById("ojtPopup").style.display = "none";
+
+      updateGreetingCard();
+
+      console.log("OJT info saved");
+
+    } catch (err) {
+      console.error("SAVE ERROR:", err);
+      alert("Failed to save");
+    }
+
+  });
+
+});
 
 function safeParseTime(t) {
   if (!t) return NaN;
   const [h, m] = t.split(":").map(Number);
   return h + m / 60;
 }
-
-
-// ===============================
-// LOGBOOK LOADER
-// ===============================
-// renders attendance table + supports filtering by month/year
 
 async function loadLogbook(month = null, year = null) {
 
@@ -195,12 +201,6 @@ async function loadLogbook(month = null, year = null) {
   }
 }
 
-
-// ===============================
-// DELETE LOG
-// ===============================
-// removes single attendance record
-
 async function deleteLog(logId) {
 
   const confirmDelete = confirm("Delete this log entry?");
@@ -216,12 +216,6 @@ async function deleteLog(logId) {
 
   alert("Log deleted!");
 }
-
-
-// ===============================
-// ABSENT MARKER
-// ===============================
-// quick insert for absent days
 
 document.getElementById("absentBtn")?.addEventListener("click", async () => {
 
@@ -251,12 +245,6 @@ document.getElementById("absentBtn")?.addEventListener("click", async () => {
   alert("Marked Absent!");
 });
 
-
-// ===============================
-// SAVE FULL DAY
-// ===============================
-// stores complete attendance record
-
 document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
 
   const date = document.getElementById("logDate").value;
@@ -282,13 +270,6 @@ document.getElementById("saveLogBtn")?.addEventListener("click", async () => {
   const today = new Date();
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
-
-
-// ===============================
-// HALF DAY SYSTEM
-// ===============================
-// splits AM / PM half-day logic
-
 async function saveHalfDay(type) {
 
   const date = document.getElementById("logDate").value;
@@ -329,12 +310,6 @@ async function saveHalfDay(type) {
   loadLogbook();
 }
 
-
-// ===============================
-// INITIAL LOAD
-// ===============================
-// sets default date + loads table
-
 window.addEventListener("load", () => {
 
   const today = new Date();
@@ -346,12 +321,6 @@ window.addEventListener("load", () => {
 
   loadLogbook(today.getMonth() + 1, today.getFullYear());
 });
-
-
-// ===============================
-// DASHBOARD GREETING
-// ===============================
-// updates user info + remaining hours
 
 async function updateGreetingCard() {
 
@@ -408,11 +377,6 @@ async function updateGreetingCard() {
   document.getElementById("remainingHours").textContent =
     `${remaining.toFixed(2)}h Remaining`;
 }
-
-// ===============================
-// TOTAL HOURS CALC
-// ===============================
-// reusable helper for dashboards + charts
 
 async function getTotalRecordedHours(userDocId) {
 

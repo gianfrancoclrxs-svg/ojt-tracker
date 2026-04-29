@@ -148,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ================= DARK MODE =================
   const modeToggle = document.getElementById("modeToggle");
 
   if (modeToggle) {
@@ -162,14 +161,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= FILTER =================
   document.getElementById("filterBtn")?.addEventListener("click", () => {
     const month = parseInt(document.getElementById("filterMonth").value);
     const year = parseInt(document.getElementById("filterYear").value);
     loadLogbook(month, year);
   });
 
-  // ================= PRINT DTR =================
   document.getElementById("printDtrBtn")?.addEventListener("click", () => {
     document.getElementById("dtrPopup").style.display = "flex";
   });
@@ -197,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ================= HALF DAY POPUP =================
   const halfBtn = document.getElementById("halfDayBtn");
   const halfPopup = document.getElementById("halfDayPopup");
 

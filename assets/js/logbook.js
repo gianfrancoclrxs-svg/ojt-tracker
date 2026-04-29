@@ -1,14 +1,8 @@
 import { db } from "./firebase.js";
 import { safeParseTime } from "./utils.js";
 
-// ===============================
-// CACHE (prevents repeated reads)
-// ===============================
 let logCache = {};
 
-// ===============================
-// LOGBOOK MODULE (GLOBAL EXPORT)
-// ===============================
 window.loadLogbook = async function (month = null, year = null) {
 
   const userDocId = localStorage.getItem("userDocId");
@@ -17,16 +11,12 @@ window.loadLogbook = async function (month = null, year = null) {
   const tbody = document.getElementById("logTableBody");
   if (!tbody) return;
 
-  // fallback to current date
   const now = new Date();
   month = month || (now.getMonth() + 1);
   year = year || now.getFullYear();
 
   const cacheKey = `${month}-${year}`;
 
-  // ===============================
-  // USE CACHE FIRST
-  // ===============================
   if (logCache[cacheKey]) {
     renderLogs(logCache[cacheKey], tbody);
     return;
@@ -47,7 +37,6 @@ window.loadLogbook = async function (month = null, year = null) {
       logs.push({ id: doc.id, ...doc.data() });
     });
 
-    // save to cache
     logCache[cacheKey] = logs;
 
     renderLogs(logs, tbody);
@@ -57,9 +46,6 @@ window.loadLogbook = async function (month = null, year = null) {
   }
 };
 
-// ===============================
-// RENDER TABLE
-// ===============================
 function renderLogs(logs, tbody) {
 
   tbody.innerHTML = "";
@@ -93,9 +79,6 @@ function renderLogs(logs, tbody) {
   });
 }
 
-// ===============================
-// DELETE LOG ENTRY
-// ===============================
 window.deleteLog = async function (id) {
 
   const userDocId = localStorage.getItem("userDocId");
@@ -109,9 +92,6 @@ window.deleteLog = async function (id) {
 
   alert("Deleted");
 
-  // ===============================
-  // CLEAR CACHE (important)
-  // ===============================
   logCache = {};
 
   const month = parseInt(document.getElementById("filterMonth")?.value);

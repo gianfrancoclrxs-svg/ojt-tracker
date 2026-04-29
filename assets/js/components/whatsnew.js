@@ -1,13 +1,9 @@
-// ================= FIRESTORE SAFETY CHECK =================
-// prevents silent failures if Firebase isn't loaded properly
 if (typeof db === "undefined") {
   console.error("Firestore db is not available in whatsnew.js");
 }
 
-// ================= VERSION CONTROL =================
 const CURRENT_WHATSNEW_VERSION = window.APP_CONFIG.version;
 
-// ================= WHAT'S NEW MODAL =================
 function createWhatsNewModal(onClose) {
 
   const overlay = document.createElement("div");
@@ -39,7 +35,6 @@ function createWhatsNewModal(onClose) {
 
   document.body.appendChild(overlay);
 
-  // ================= CLOSE HANDLER =================
   document.getElementById("closeWhatsNew").addEventListener("click", () => {
     overlay.remove();
     onClose();

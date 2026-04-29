@@ -41,7 +41,6 @@ td:first-child {
   margin: 0 0 5px 0; 
 }
 
-/* Name */
 .name-section {
   text-align: center;
   margin: 10px 0; 
@@ -66,7 +65,6 @@ td:first-child {
   height: 12px;
 }
 
-/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;

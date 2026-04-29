@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================= FOOTER STYLES =================
-  // injects footer styles dynamically (no external CSS needed for this component)
   const style = document.createElement("style");
 
 style.textContent = `
@@ -56,8 +54,6 @@ style.textContent = `
 
   document.head.appendChild(style);
 
-  // ================= FOOTER TEMPLATE =================
-  // static footer content for all pages
   const footer = `
     <footer class="app-footer">
 
@@ -80,8 +76,5 @@ style.textContent = `
     </footer>
   `;
 
-  // IMPORTANT:
-  // footer is appended once at the end of body
-  // avoid calling this script multiple times or you'll duplicate footer
   document.body.insertAdjacentHTML("beforeend", footer);
 });

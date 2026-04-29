@@ -62,9 +62,6 @@
     };
   }
 
-  // ===============================
-  // AUTO SHOW ON LOAD
-  // ===============================
     window.addEventListener("DOMContentLoaded", () => {
     createWarningPopup(`
     High system usage detected.
@@ -86,7 +83,6 @@
     `);
     });
 
-  // optional manual control
   window.showAppWarning = createWarningPopup;
 
 })();

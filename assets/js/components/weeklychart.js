@@ -10,7 +10,6 @@ const getTheme = () => ({
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // ================= TOOLTIP =================
   const tooltip = document.createElement("div");
 
   tooltip.style.position = "fixed";
@@ -26,7 +25,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.body.appendChild(tooltip);
 
-  // Hide tooltip when clicking anywhere
   document.addEventListener("click", () => {
     tooltip.style.opacity = "0";
   });
@@ -96,7 +94,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const values = labels.map(l => week[l].hours);
 
-  // ================= CARD =================
   const card = document.createElement("div");
   const t = getTheme();
 
@@ -136,13 +133,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 }
 
-  // ================= WRAPPER =================
   const wrapper = document.createElement("div");
   wrapper.style.display = "flex";
   wrapper.style.gap = "10px";
   wrapper.style.alignItems = "flex-end";
 
-  // ================= AXIS =================
   const axis = document.createElement("div");
   axis.style.display = "flex";
   axis.style.flexDirection = "column";
@@ -158,7 +153,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     axis.appendChild(el);
   });
 
-  // ================= BARS =================
   const bars = document.createElement("div");
   bars.style.display = "flex";
   bars.style.justifyContent = "space-between";
@@ -198,13 +192,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     bar.style.transition = "height 0.7s ease";
     bar.style.cursor = "pointer";
 
-// ================= TOOLTIP EVENTS (MOBILE ONLY) =================
 bar.addEventListener("click", (e) => {
   e.stopPropagation();
 
   tooltip.style.opacity = "1";
 
-  // 🎨 Always readable colors
   tooltip.style.background = isDarkMode()
     ? "rgba(40,40,40,0.95)"
     : "rgba(0,0,0,0.85)";
@@ -223,7 +215,6 @@ bar.addEventListener("click", (e) => {
     `;
   }
 
-  // 📍 Position exactly where user taps
   const x = e.clientX;
   const y = e.clientY;
 
@@ -231,7 +222,6 @@ bar.addEventListener("click", (e) => {
   tooltip.style.top = (y - 10) + "px";
   tooltip.style.transform = "translate(-50%, -100%)";
 
-  // 🧠 Keep tooltip inside screen
   requestAnimationFrame(() => {
     const rect = tooltip.getBoundingClientRect();
 
@@ -262,25 +252,21 @@ col.appendChild(bar);
 col.appendChild(text);
 bars.appendChild(col);
 
-// Animate bar
 setTimeout(() => {
   bar.style.height = value > 0 ? height + "px" : "6px";
 }, 300 + i * 80);
 });
 
-// ================= CLOSE TOOLTIP ON OUTSIDE CLICK =================
 document.addEventListener("click", () => {
   tooltip.style.opacity = "0";
 });
 
-// ================= FINAL RENDER =================
 wrapper.appendChild(axis);
 wrapper.appendChild(bars);
 card.appendChild(wrapper);
 applyTheme();
 mount.parentNode.insertBefore(card, mount);
 
-// entrance animation
 requestAnimationFrame(() => {
   card.style.opacity = "1";
   card.style.transform = "translateY(0)";

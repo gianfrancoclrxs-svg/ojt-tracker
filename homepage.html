@@ -113,6 +113,20 @@
   background: #2196f3;
   color: white;
 }
+
+.popup input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+
+  border-radius: 10px;
+  border: 1px solid #ddd;
+
+  font-size: 14px;
+  font-family: inherit;
+
+  box-sizing: border-box;
+}
 </style>
 </head>
 <body>
@@ -127,7 +141,7 @@
       <input type="text" id="ojtCompanyName" placeholder="Company Name">
       <input type="text" id="ojtAddress" placeholder="Company Address">
       <input type="number" id="targetHours" placeholder="Target Hours">
-      <button id="saveOjtBtn">Save</button>
+      <button id="saveOjtBtn" style="width: 100%;">Save</button>
     </div>
   </div>
 
@@ -208,7 +222,6 @@
 
 </div>
 <!-- <script src="/assets/js/components/warning.js"></script> -->
-<script src="/assets/js/components/accomplishment.js"></script>
 <script src="/assets/js/config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>

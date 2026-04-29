@@ -18,6 +18,17 @@ function getMonthName(monthNumber) {
   return ["January","February","March","April","May","June","July","August","September","October","November","December"][monthNumber - 1];
 }
 
+function formatTo12Hour(time) {
+  if (!time) return "";
+
+  const [hourStr, minute] = time.split(":");
+  let hour = parseInt(hourStr, 10);
+
+  hour = hour % 12 || 12;
+
+  return `${hour}:${minute}`;
+}
+
 async function loadDTR(month, year) {
   try {
     const userDocId = localStorage.getItem("userDocId");
@@ -64,10 +75,10 @@ async function loadDTR(month, year) {
       row.innerHTML = `
         <td>${day}</td>
         <td>${hasRecord ? getDayName(dateStr) : ""}</td>
-        <td>${hasRecord ? record.am_in : ""}</td>
-        <td>${hasRecord ? record.am_out : ""}</td>
-        <td>${hasRecord ? record.pm_in : ""}</td>
-        <td>${hasRecord ? record.pm_out : ""}</td>
+        <td>${hasRecord ? formatTo12Hour(record.am_in) : ""}</td>
+        <td>${hasRecord ? formatTo12Hour(record.am_out) : ""}</td>
+        <td>${hasRecord ? formatTo12Hour(record.pm_in) : ""}</td>
+        <td>${hasRecord ? formatTo12Hour(record.pm_out) : ""}</td>
         <td></td>
       `;
 

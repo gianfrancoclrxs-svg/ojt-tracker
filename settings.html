@@ -40,7 +40,6 @@
   color: #fbbc05;
 }
 
-/* ================= TEXTAREA ================= */
 textarea {
   width: 100%;
   min-height: 100px;
@@ -61,13 +60,11 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(37,117,252,0.20);
 }
 
-/* ================= CARD ================= */
 .card {
   padding: 20px;
   box-sizing: border-box;
 }
 
-/* inputs inside card */
 .card input,
 .card select,
 .card textarea {
@@ -82,7 +79,6 @@ textarea:focus {
   color: #222;
 }
 
-/* ================= TEXT ================= */
 .card h3 {
   margin-bottom: 10px;
 }
@@ -104,7 +100,6 @@ textarea:focus {
   margin: 6px 0;
 }
 
-/* ================= BUTTON ================= */
 #submitFeedbackBtn {
   background-color: #4caf50;
   color: white;
@@ -121,7 +116,6 @@ textarea:focus {
   opacity: 0.95;
 }
 
-/* ================= HR ================= */
 hr {
   border: none;
   height: 1px;
@@ -129,7 +123,6 @@ hr {
   margin: 12px 0;
 }
 
-/* ================= DARK MODE SUPPORT ================= */
 body.dark-mode textarea,
 body.dark-mode .card input,
 body.dark-mode .card select,
@@ -148,7 +141,6 @@ body.dark-mode hr {
   background: rgba(255,255,255,0.15);
 }
 
-/* ================= MOBILE ================= */
 @media (max-width: 480px) {
   .star-rating label {
     font-size: 28px;
@@ -241,9 +233,6 @@ body.dark-mode hr {
 <script>
 window.addEventListener("DOMContentLoaded", () => {
 
-  // ========================
-  // VERSION + WHAT'S NEW
-  // ========================
   const versionEl = document.getElementById("appVersion");
   const list = document.getElementById("whatsNewList");
 
@@ -281,9 +270,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ========================
-  // LOGOUT
-  // ========================
   window.logout = function () {
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("userDocId");
@@ -291,9 +277,6 @@ window.addEventListener("DOMContentLoaded", () => {
     location.href = "index.html";
   };
 
-  // ========================
-  // DELETE ACCOUNT
-  // ========================
   window.deleteAccount = async function () {
     const confirmDelete = confirm("Are you sure? This cannot be undone.");
     if (!confirmDelete) return;
@@ -317,14 +300,11 @@ window.addEventListener("DOMContentLoaded", () => {
     location.href = "index.html";
   };
 
-  // ========================
-  // LOAD OJT INFO
-  // ========================
   async function loadOjtInfo() {
     const userDocId = localStorage.getItem("userDocId");
     if (!userDocId) return;
 
-    console.log("Loading userDocId:", userDocId); // ✅ DEBUG
+    console.log("Loading userDocId:", userDocId); 
 
     const docRef = db.collection("users").doc(userDocId);
     const doc = await docRef.get();
@@ -347,9 +327,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   loadOjtInfo();
 
-  // ========================
-  // SAVE SETTINGS
-  // ========================
   const saveBtn = document.getElementById("saveOjtSettingsBtn");
 
   if (saveBtn) {
@@ -358,7 +335,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const userDocId = localStorage.getItem("userDocId");
       if (!userDocId) return alert("No user session found.");
 
-      console.log("Updating userDocId:", userDocId); // ✅ DEBUG
+      console.log("Updating userDocId:", userDocId); 
 
       const docRef = db.collection("users").doc(userDocId);
       const doc = await docRef.get();
@@ -376,15 +353,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
       await docRef.update(updatedData);
 
-      console.log("Updated data:", updatedData); // ✅ DEBUG
+      console.log("Updated data:", updatedData);
 
       alert("Updated successfully!");
     });
   }
 
-  // ========================
-  // FEEDBACK
-  // ========================
   const feedbackBtn = document.getElementById("submitFeedbackBtn");
 
   if (feedbackBtn) {
